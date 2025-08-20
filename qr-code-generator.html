@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vivarch · QR Code Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="logo.png" />
+  <style>
+    :root{
+      --accent:#149bb2;
+      --secondary:#cdd2d4;
+      --text:#4a4a4a;
+      --white:#fafeff;
+      --radius:22px;
+      --header-h:150px;
+      --dock-h:75px;
+      --ring: rgba(20,155,178,.25);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 10% -10%, rgba(20,155,178,.18), transparent 60%),
+        radial-gradient(1200px 800px at 110% 110%, rgba(20,155,178,.12), transparent 60%),
+        var(--secondary);
+    }
+
+    /* Header (flat, 150px, logo only) */
+    .header{
+      position:sticky; top:0; z-index:50; height:var(--header-h);
+      display:flex; align-items:center; justify-content:center; background: var(--white);
+      border-bottom:1px solid #ddd;
+    }
+    .header img{height:100%; width:auto; max-height:120px;}
+
+    /* Title identical to index */
+    .hub-title{
+      text-align:center; margin:20px 0; font-size:28px; font-weight:700; color:var(--accent);
+    }
+
+    /* === Locked Stage (identical to index.html) === */
+    .container{
+      min-height:calc(100dvh - var(--header-h) - var(--dock-h));
+      display:grid; place-items:center;
+      padding:10px 16px 120px;
+    }
+    .stage{
+      width:min(1200px, 94vw);
+      min-height:min(600px, 62vh);
+      background:linear-gradient(180deg, rgba(250,254,255,.92), rgba(250,254,255,.72));
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:var(--radius);
+      backdrop-filter: blur(8px) saturate(140%);
+      -webkit-backdrop-filter: blur(8px) saturate(140%);
+      padding:28px;
+      display:flex; align-items:center; justify-content:center; text-align:center;
+      overflow:hidden;
+    }
+    /* ============================================= */
+
+    /* Card/content (lock inside the stage) */
+    .wrap{max-width:1100px; margin:0 auto; width:100%; height:100%;}
+    .card{
+      background:#fafeff;
+      border-radius:var(--radius);
+      padding:20px;
+      border:1px solid rgba(0,0,0,.06);
+      box-shadow:0 12px 30px rgba(0,0,0,0.06);
+      text-align:left;
+      height:100%;
+      overflow:auto;          /* scroll inside card if needed; stage never grows */
+    }
+    h1{margin:0 0 16px; text-align:center; font-weight:700; color:var(--text); font-size:26px;}
+
+    .grid{
+      display:grid; grid-template-columns:1.05fr .95fr; gap:18px;
+      height:calc(100% - 48px); /* keep grid inside card */
+      min-height:0;
+    }
+    @media (max-width:980px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    /* Fields */
+    .field{display:flex; flex-direction:column; gap:8px; margin-bottom:12px}
+    .label{font-size:12px; color:#5a6a6f}
+    input[type="text"], textarea, select, input[type="number"]{
+      width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.08);
+      background:#f6f8f9; color:var(--text); outline:none; transition:border .2s, box-shadow .2s
+    }
+    input:focus, textarea:focus, select:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--ring)}
+    textarea{min-height:88px; resize:vertical}
+    input[type="color"]{background:transparent; border:none; padding:0; width:40px; height:40px; border-radius:8px}
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    .row > *{flex:1}
+    .btn{
+      appearance:none; border:none; background:linear-gradient(180deg,var(--accent),#117a8c);
+      color:white; padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer
+    }
+    .btn.secondary{background:#e9f4f6; color:#0b2529; border:1px solid rgba(0,0,0,.08)}
+    .btn:disabled{opacity:.5; cursor:not-allowed}
+
+    /* Right: Preview column — compact, never pushes layout */
+    .qr-card{
+      background:#ffffffd0;
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:16px;
+      padding:16px;
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:12px;
+      height:100%;
+      min-height:0;
+    }
+    .qr-box{
+      position:relative;
+      flex:0 0 auto;
+      width:clamp(220px, 34vw, 340px);  /* ⬅️ compact + responsive */
+      aspect-ratio:1/1;                 /* always square */
+      background:#f0f3f4; border:1px dashed rgba(0,0,0,.12); border-radius:14px;
+      overflow:hidden; padding:10px;
+      margin-top:4px;
+    }
+
+    /* Canvas scales to the box; never changes layout height */
+    #qrTarget, #qrTarget canvas{
+      width:100% !important;
+      height:100% !important;
+      display:block;
+    }
+
+    .note{font-size:12px; color:#5a6a6f}
+
+    /* Dock — EXACT match to index.html */
+    .dock{
+      position:fixed; left:0; right:0; bottom:30px; height:var(--dock-h);
+      display:flex; align-items:center; justify-content:center; padding:0 16px; z-index:40;
+      pointer-events:none;
+    }
+    .dock-inner{
+      pointer-events:auto;
+      display:flex; gap:14px; padding:14px 16px;
+      border-radius: 50px;
+      background:linear-gradient(180deg, rgba(250,254,255,.70), rgba(250,254,255,.42));
+      border:1px solid rgba(255,255,255,.55);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+    }
+    .tab{
+      appearance:none; border:none; text-decoration:none; cursor:pointer; user-select:none;
+      background:
+        radial-gradient(120% 160% at 50% -40%, rgba(20,155,178,.22), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.75));
+      border:1px solid rgba(255,255,255,.7);
+      color:#12343b; font-weight:700; letter-spacing:.2px;
+      padding:12px 18px; min-width:200px; text-align:center; border-radius:var(--radius);
+      transition: transform .15s ease;
+    }
+    .tab:hover{ transform: translateY(-2px);}
+    .tab:focus-visible{ outline: none; box-shadow: 0 0 0 5px var(--ring);}
+    @media (max-width:720px){ .tab{min-width:unset; font-size:14px; padding:10px 14px} }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" role="banner">
+    <img src="logo.png" alt="Vivarch logo" />
+  </header>
+
+  <!-- Title -->
+  <div class="hub-title">Vivarch Tools Hub</div>
+
+  <!-- Stage -->
+  <main class="container" role="main">
+    <section class="stage" aria-live="polite">
+      <div class="wrap">
+        <div class="card">
+          <h1>QR Code Generator</h1>
+
+          <div class="grid">
+            <!-- Left: Controls -->
+            <section>
+              <div class="field">
+                <label class="label" for="data">Text / URL</label>
+                <textarea id="data" placeholder="Type or paste the content to encode…"></textarea>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="size">Size (px)</label>
+                  <input id="size" type="number" min="128" max="1024" step="16" value="384" />
+                </div>
+                <div class="field">
+                  <label class="label" for="margin">Quiet zone (margin)</label>
+                  <input id="margin" type="number" min="0" max="50" step="1" value="16" />
+                </div>
+                <div class="field">
+                  <label class="label" for="ecc">Error correction</label>
+                  <select id="ecc">
+                    <option value="L">L (7%)</option>
+                    <option value="M" selected>M (15%)</option>
+                    <option value="Q">Q (25%)</option>
+                    <option value="H">H (30%)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label class="label">Foreground</label>
+                  <input id="fg" type="color" value="#149bb2" />
+                </div>
+                <div class="field">
+                  <label class="label">Background</label>
+                  <input id="bg" type="color" value="#cdd2d4" />
+                </div>
+                <div class="field">
+                  <label class="label" for="format">Format</label>
+                  <select id="format">
+                    <option value="png" selected>PNG</option>
+                    <option value="svg">SVG</option>
+                    <option value="jpeg">JPEG</option>
+                    <option value="webp">WEBP</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label class="label" for="logo">Logo (optional)</label>
+                  <input id="logo" type="file" accept="image/*" />
+                </div>
+                <div class="row" style="flex:1">
+                  <button id="download" class="btn">Download</button>
+                  <button id="clearLogo" class="btn secondary">Clear logo</button>
+                </div>
+              </div>
+
+              <p class="note">Tip: If your camera shows "Search Web" instead of opening the site, include <code>https://</code> in the URL.</p>
+            </section>
+
+            <!-- Right: Preview -->
+            <section class="qr-card">
+              <div id="qrBox" class="qr-box">
+                <!-- QR appears here after input; starts empty -->
+                <div id="qrTarget"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Dock -->
+  <nav class="dock" role="navigation" aria-label="Primary">
+    <div class="dock-inner">
+      <a class="tab" href="zone-allocation.html">Zone Allocation Search</a>
+      <a class="tab" href="qr-code-generator.html">QR Code Generator</a>
+      <a class="tab" href="url-shortening-service.html">URL Shortening Service</a>
+    </div>
+  </nav>
+
+  <!-- QR library -->
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+  <script>
+    (function(){
+      const els = {
+        data: document.getElementById('data'),
+        size: document.getElementById('size'),
+        margin: document.getElementById('margin'),
+        ecc: document.getElementById('ecc'),
+        fg: document.getElementById('fg'),
+        bg: document.getElementById('bg'),
+        format: document.getElementById('format'),
+        logo: document.getElementById('logo'),
+        download: document.getElementById('download'),
+        clearLogo: document.getElementById('clearLogo'),
+        qrBox: document.getElementById('qrBox'),
+        qrTarget: document.getElementById('qrTarget'),
+      };
+
+      const qr = new QRCodeStyling({
+        width: 384,
+        height: 384,
+        type: 'canvas',
+        data: '',
+        margin: parseInt(els.margin.value,10),
+        qrOptions: { errorCorrectionLevel: els.ecc.value },
+        backgroundOptions: { color: els.bg.value },
+        dotsOptions: { color: els.fg.value, type: 'square' }
+      });
+
+      let hasAppended = false;
+
+      function clamp(v,min,max){ return Math.max(min, Math.min(max, v||0)); }
+      function debounce(fn, wait){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn.apply(this,a),wait); }; }
+
+      function normalizeUrlLike(input){
+        let s = (input || '').trim();
+        if(!s) return s;
+        const lower = s.toLowerCase();
+        if (lower.startsWith('http://') || lower.startsWith('https://')) return s;
+        if (s.startsWith('www.')) return 'https://' + s;
+        if (!s.includes(' ') && s.includes('.') && !s.includes('://')) return 'https://' + s;
+        return s;
+      }
+
+      function ensureAppended(){
+        if (!hasAppended){
+          qr.append(els.qrTarget);
+          hasAppended = true;
+        }
+      }
+
+      function currentBoundSize(){
+        const r = els.qrBox.getBoundingClientRect();
+        return Math.floor(Math.min(r.width, r.height));
+      }
+
+      function updateQRCode(){
+        const wanted = clamp(parseInt(els.size.value||0,10), 128, 1024);
+        const margin = clamp(parseInt(els.margin.value||0,10), 0, 50);
+        const data = normalizeUrlLike(els.data.value);
+
+        if (!data){
+          els.qrTarget.innerHTML = '';
+          hasAppended = false;
+          return;
+        }
+
+        ensureAppended();
+
+        const bound = currentBoundSize();              // limited by smaller box
+        const finalSize = clamp(Math.min(wanted, bound), 128, 1024);
+
+        const opts = {
+          width: finalSize,
+          height: finalSize,
+          data,
+          margin,
+          qrOptions: { errorCorrectionLevel: els.ecc.value },
+          backgroundOptions: { color: els.bg.value },
+          dotsOptions: { color: els.fg.value },
+          image: undefined
+        };
+
+        // Optional logo
+        if (els.logo.files && els.logo.files[0]) {
+          const file = els.logo.files[0];
+          const reader = new FileReader();
+          reader.onload = () => {
+            qr.update({
+              ...opts,
+              image: reader.result,
+              imageOptions: {
+                crossOrigin: 'anonymous',
+                hideBackgroundDots: true,
+                margin: 4
+              }
+            });
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        qr.update(opts);
+      }
+
+      // Keep QR responsive to layout changes without touching the stage
+      const ro = new ResizeObserver(() => {
+        if (normalizeUrlLike(els.data.value)) updateQRCode();
+      });
+      ro.observe(els.qrBox);
+
+      // Download current QR
+      els.download.addEventListener('click', async () => {
+        try{
+          if (!hasAppended || !(normalizeUrlLike(els.data.value))) return;
+          const ext = els.format.value;
+          const blob = await qr.getRawData(ext);
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = `qr-${Date.now()}.${ext === 'svg' ? 'svg' : ext}`;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+        }catch(e){
+          console.error(e);
+          alert('Download failed.');
+        }
+      });
+
+      // Live updates on change (no animation)
+      const live = [els.data, els.size, els.margin, els.ecc, els.fg, els.bg, els.logo, els.format];
+      live.forEach(el=>{
+        const handler = (el===els.data) ? debounce(updateQRCode, 220) : updateQRCode;
+        el.addEventListener('change', handler);
+        if (el===els.data) el.addEventListener('keyup', handler);
+      });
+
+      els.clearLogo.addEventListener('click', () => { els.logo.value=''; updateQRCode(); });
+    })();
+  </script>
+</body>
+</html>

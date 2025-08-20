@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vivarch · Tools Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="logo.png" />
+  <style>
+    :root{
+      --accent:#149bb2;
+      --secondary:#cdd2d4;
+      --text:#4a4a4a;
+      --white:#fafeff;
+      --radius:22px;
+      --header-h:150px;
+      --dock-h:75px;
+      --ring: rgba(20,155,178,.25);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 10% -10%, rgba(20,155,178,.18), transparent 60%),
+        radial-gradient(1200px 800px at 110% 110%, rgba(20,155,178,.12), transparent 60%),
+        var(--secondary);
+    }
+
+    /* Header flat */
+    .header{
+      position:sticky; top:0; z-index:50; height:var(--header-h);
+      display:flex; align-items:center; justify-content:center; background: var(--white);
+      border-bottom:1px solid #ddd;
+    }
+    .header img{height:100%; width:auto; max-height:120px;}
+
+    /* Title */
+    .hub-title{
+      text-align:center; margin:20px 0; font-size:28px; font-weight:700; color:var(--accent);
+    }
+
+    /* Stage */
+    .container{min-height:calc(100dvh - var(--header-h) - var(--dock-h)); display:grid; place-items:center; padding:10px 16px 120px}
+    .stage{
+      width:min(1200px, 94vw);
+      min-height:min(600px, 62vh);
+      background:linear-gradient(180deg, rgba(250,254,255,.92), rgba(250,254,255,.72));
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:var(--radius);
+      backdrop-filter: blur(8px) saturate(140%);
+      -webkit-backdrop-filter: blur(8px) saturate(140%);
+      padding:28px;
+      display:flex; align-items:center; justify-content:center; text-align:center;
+    }
+    .stage .placeholder{
+      max-width:680px; color:#2d3c40;
+    }
+    .placeholder h2{margin:0 0 12px; font-size:28px; font-weight:700}
+    .placeholder p{margin:0 0 8px; line-height:1.6}
+
+    /* Dock tabs */
+    .dock{
+      position:fixed; left:0; right:0; bottom:30px; height:var(--dock-h);
+      display:flex; align-items:center; justify-content:center; padding:0 16px; z-index:40;
+      pointer-events:none;
+    }
+    .dock-inner{
+      pointer-events:auto;
+      display:flex; gap:14px; padding:14px 16px; border-radius: 50px;
+      background: linear-gradient(180deg, rgba(250,254,255,.70), rgba(250,254,255,.42));
+      border:1px solid rgba(255,255,255,.55);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+    }
+    .tab{
+      appearance:none; border:none; text-decoration:none; cursor:pointer; user-select:none;
+      background:
+        radial-gradient(120% 160% at 50% -40%, rgba(20,155,178,.22), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.75));
+      border:1px solid rgba(255,255,255,.7);
+      color:#12343b; font-weight:700; letter-spacing:.2px;
+      padding:12px 18px; min-width:200px; text-align:center; border-radius:var(--radius);
+      transition: transform .15s ease;
+    }
+    .tab:hover{ transform: translateY(-2px);}
+    .tab:focus-visible{ outline: none; box-shadow: 0 0 0 5px var(--ring);}
+
+    .badge{display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; color:#0c2f35; background:rgba(20,155,178,.18); border:1px solid rgba(20,155,178,.35)}
+
+    @media (max-width:720px){
+      .tab{min-width:unset; font-size:14px; padding:10px 14px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" role="banner">
+    <img src="logo.png" alt="Vivarch logo" />
+  </header>
+
+  <!-- Title -->
+  <div class="hub-title">Vivarch Tools Hub</div>
+
+  <!-- Stage (empty on landing) -->
+  <main class="container" role="main">
+    <section class="stage" aria-live="polite">
+      <div class="placeholder">
+        <h2>Welcome</h2>
+        <p>Select a tool from the dock to begin.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Glass dock tabs -->
+  <nav class="dock" role="navigation" aria-label="Primary">
+    <div class="dock-inner">
+      <a class="tab" href="zone-allocation.html">Zone Allocation Search</a>
+      <a class="tab" href="qr-code-generator.html">QR Code Generator</a>
+      <a class="tab" href="url-shortening-service.html">URL Shortening Service</a>
+    </div>
+  </nav>
+
+</body>
+</html>
