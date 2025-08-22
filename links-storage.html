@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Links Terminal</title>
+  <style>
+    :root {
+      --white: #fafeff;
+      --white-2: #f5f5f7;
+      --teal: #006666;
+      --ink: #4a4a4a;
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.12);
+      --speed: 560ms;
+      --grey: #999;
+      --gutter: 16px;
+      --header-h: 100px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+      color: var(--ink);
+      background: var(--white-2);
+    }
+
+    .stage-wrap {
+      display: grid;
+      place-items: center;
+      height: 100vh;
+      width: 100vw;
+      padding: 1.5vmin;
+      background: linear-gradient(180deg, var(--white-2), var(--white));
+    }
+
+    .stage {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      width: min(160vmin, 100%);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* ===== Sticky header (on top of Board and Table) ===== */
+    .app-header{
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--white-2);
+      z-index: 100; /* above views/toggles */
+      display: flex;
+      align-items: center;
+      padding: 0 var(--gutter);
+    }
+    .app-header a{
+      display: inline-flex;
+      align-items: center;
+      height: 100%;
+    }
+    .app-header img{
+      display: block;
+      height: 64px;
+      width: auto;
+    }
+
+    .view-toggle {
+      position: absolute;
+      top: calc(var(--header-h) + var(--gutter)); /* below header, aligned to top gutter */
+      right: var(--gutter);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 30;
+      user-select: none;
+    }
+
+    .toggle-label { font-size: 14px; }
+
+    .toggle {
+      inline-size: 64px;
+      block-size: 30px;
+      border-radius: 999px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: background var(--speed) ease;
+    }
+    .knob {
+      inline-size: 17px;
+      block-size: 17px;
+      border-radius: 50%;
+      background: var(--white);
+      transform: translateX(0);
+      transition: transform var(--speed) cubic-bezier(.2,.8,.2,1);
+    }
+
+    body.show-table .toggle { background: var(--grey); justify-content: flex-start; }
+    body.show-board .toggle { background: var(--teal); justify-content: flex-end; }
+
+    body.show-table .knob { transform: translateX(0); }
+    body.show-board .knob { transform: translateX(0); }
+
+    /* Board view canvas (stays behind) */
+    .board { position: absolute; inset: 0; background: var(--white); z-index: 0; }
+
+    /* Table overlay occupies the same interior area as board-grid (equal gutters) */
+    .table-overlay {
+      position: absolute;
+      inset: calc(var(--header-h) + var(--gutter)) var(--gutter) var(--gutter) var(--gutter);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      background: rgba(250, 254, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      color: var(--ink);
+      font-size: 1rem;
+      transition: transform var(--speed) cubic-bezier(.2,.8,.2,1), opacity var(--speed) ease;
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+      display: block;
+    }
+    body.show-table .table-overlay{
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border: 1px solid var(--white-2); text-align: left; }
+
+    .actions { margin-bottom: 10px; }
+    .actions button {
+      margin-right: 8px; background: var(--teal); color: var(--white);
+      border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    }
+    .actions button:hover { background: var(--ink); }
+
+    /* Board + cards */
+    .toggle-endpoint{ font-size:14px; }
+    .board-toolbar{
+      position: absolute;
+      top: calc(var(--header-h) + var(--gutter));
+      left: var(--gutter);
+      right: auto;
+      display:flex; gap:10px; z-index:5;
+    }
+    /* Equal gutters (16px on all sides), top shifted by header height */
+    .board-grid{
+      position:absolute;
+      inset: calc(var(--header-h) + var(--gutter)) var(--gutter) var(--gutter) var(--gutter);
+      display:block; touch-action:none;
+    }
+
+    .card{ position:absolute; border-radius:12px; padding:0; display:block; min-width:140px; min-height:44px; touch-action:none; }
+    .card-btn{
+      position:relative; display:flex; align-items:center; justify-content:center;
+      width:100%; height:100%; padding:10px 12px; border-radius:10px; text-decoration:none;
+    }
+    .card-url{ opacity:.75; }
+
+    .btn{ background: var(--teal); color: var(--white); border:0; border-radius:10px; padding:8px 12px; cursor:pointer; }
+    .btn:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+    .mini{ padding:6px 10px; border-radius:8px; border:0; background: var(--ink); color: var(--white); cursor:pointer; }
+    .mini.danger{ background: var(--ink); }
+
+    .table-pane{ position:absolute; inset:0; display:flex; flex-direction:column; }
+    .table-toolbar{ display:flex; gap:10px; padding:14px; }
+    .table-scroll{ flex:1; overflow:auto; padding:0 14px 14px; }
+    .lt-table{ width:100%; border-collapse:collapse; border-radius:12px; overflow:hidden; }
+    .lt-table thead th{ text-align:left; background: var(--white-2); padding:12px; }
+    .lt-table tbody td{ border-top:1px solid var(--white-2); padding:8px; }
+    .lt-table input[type=url], .lt-table input[type=text]{ width:100%; padding:8px; border:1px solid var(--white-2); border-radius:8px; background: var(--white); color: var(--ink); }
+
+    .dock{ position:absolute; margin:0; border-radius:16px; overflow:hidden; box-shadow: var(--shadow); background: transparent !important; }
+    .dock-head{ display:flex; align-items:center; gap:8px; background: var(--teal); color: var(--white); padding:8px 12px; }
+    .dot{ display:inline-block; width:12px; height:12px; border-radius:50%; }
+    .dot-red{ background:#ff3b30; }
+    .dot-yellow{ background:#ffcc00; }
+    .dock-title{ margin-left:8px; outline:none; }
+    .dock-body{ position:relative; min-height:160px; }
+    .dock-body.is-min{ display:none; }
+    .dock-glass{
+      position:absolute; inset:0; pointer-events:none;
+      backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%);
+      background: rgba(250,254,255,.85);
+      border:1px solid rgba(255,255,255,.38);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -1px 0 rgba(74,74,74,.08), 0 12px 40px rgba(0,0,0,.14);
+      border-radius: var(--radius);
+    }
+
+    /* Visual bevels */
+    .card { background: transparent !important; box-shadow: none !important; }
+    .card .card-btn {
+      background: rgba(250,254,255,.55); border: 1px solid currentColor; color: var(--teal);
+      backdrop-filter: blur(18px) saturate(180%); -webkit-backdrop-filter: blur(18px) saturate(180%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.65), inset 0 -1px 0 rgba(74,74,74,.06), 0 8px 30px rgba(0,0,0,.10);
+    }
+    .card .card-btn:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+    /* Drag snap */
+    .snap{ animation: lt-snap 220ms ease; }
+    @keyframes lt-snap{ 0%{ transform: scale(0.96); } 100%{ transform: scale(1); } }
+
+    /* Left drag strip + bottom-right resize handle (from your latest version) */
+    .drag-strip{
+      position:absolute; left:0; top:0; bottom:0; width:12px;
+      border-top-left-radius:10px; border-bottom-left-radius:10px;
+      cursor: grab;
+    }
+    .card.dragging .drag-strip{ cursor: grabbing; }
+
+    .resize-handle{
+      position:absolute; right:6px; bottom:6px; width:0; height:0;
+      border-right:8px solid currentColor; border-top:8px solid transparent;
+      pointer-events:auto; cursor:nwse-resize;
+    }
+
+    /* Docks; minimized state/resize handle (unchanged) */
+    .dock-head{ cursor: default !important; }
+    .dock-head.dragging{ cursor: grabbing !important; }
+    .dock-title{ cursor: text; }
+    .dock.is-minimized { min-height: 0 !important; height: auto !important; }
+    .dock.is-minimized .dock-body { display: none !important; }
+    .dock.is-minimized .dock-resize { display: none !important; }
+    .dock-resize{
+      position:absolute; right:6px; bottom:6px; width:12px; height:12px;
+      border-right:2px solid var(--teal); border-bottom:2px solid var(--teal);
+      border-bottom-right-radius:6px; cursor:nwse-resize;
+    }
+  </style>
+</head>
+<body class="show-board">
+  <div class="stage-wrap">
+    <main class="stage" role="application" aria-label="Links Terminal">
+      <!-- Sticky header -->
+      <header class="app-header" role="banner">
+        <a href="index.html" aria-label="Go to Home">
+          <img src="logo.png" alt="Logo">
+        </a>
+      </header>
+
+      <!-- Top-right control: "Table [toggle] Board" -->
+      <div class="view-toggle" aria-live="polite">
+        <span class="toggle-endpoint" aria-hidden="true">Table</span>
+        <button class="toggle" type="button" aria-pressed="false" aria-label="Toggle Table and Board">
+          <span class="knob" aria-hidden="true"></span>
+        </button>
+        <span class="toggle-endpoint" aria-hidden="true">Board</span>
+      </div>
+
+      <!-- Board view -->
+      <section class="board" id="boardView" role="region" aria-label="Board view">
+        <div class="board-toolbar">
+          <button class="btn" id="addDockBtn" type="button">Add Dock</button>
+        </div>
+        <div class="board-grid" id="boardGrid" aria-label="Cards grid"></div>
+      </section>
+
+      <!-- Table overlay -->
+      <section class="table-overlay" id="tableView" role="region" aria-label="Table view">
+        <div class="table-pane">
+          <div class="table-toolbar">
+            <button class="btn" id="addRowBtn" type="button">Add Row</button>
+            <button class="btn" id="deleteSelectedBtn" type="button">Delete Selected</button>
+          </div>
+          <div class="table-scroll">
+            <table class="lt-table" id="linksTable" aria-label="Links table">
+              <thead>
+                <tr>
+                  <th style="width:44px; text-align:center;"><input type="checkbox" id="selectAll"></th>
+                  <th>External Links</th>
+                  <th>Button Title</th>
+                  <th style="width:120px;">Color</th>
+                  <th style="width:90px;">Delete</th>
+                </tr>
+              </thead>
+              <tbody id="linksTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function(){
+      const LS_KEY = 'linksTerminalModelV1';
+
+      const root = document.body;
+      const toggle = document.querySelector('.toggle');
+      const addRowBtn = document.getElementById('addRowBtn');
+      const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+      const selectAll = document.getElementById('selectAll');
+      const tbody = document.getElementById('linksTbody');
+      const boardGrid = document.getElementById('boardGrid');
+      const addDockBtn = document.getElementById('addDockBtn');
+
+      // ---------------- Persistence ----------------
+      function saveModel(){
+        try { localStorage.setItem(LS_KEY, JSON.stringify(model)); } catch(e){ /* ignore quota */ }
+      }
+      function loadModel(){
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if(!raw) return null;
+          const parsed = JSON.parse(raw);
+          // very light shape check
+          if(parsed && Array.isArray(parsed.rows) && Array.isArray(parsed.docks)) return parsed;
+        } catch(e){}
+        return null;
+      }
+
+      // ---------------- Model + Undo ----------------
+      let model = loadModel() || { rows: [], docks: [] }; // rows: {id,url,title,color,cardId,x,y,w,h,parentDockId}
+      const history = [];
+      function snapshot(){ history.push(JSON.stringify(model)); if(history.length>50) history.shift(); }
+      function undo(){ if(!history.length) return; model = JSON.parse(history.pop()); renderAll(); saveModel(); }
+      window.addEventListener('keydown', (e)=>{ if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); undo(); }});
+
+      // ---------------- View switching ----------------
+      function toBoard(){ root.classList.remove('show-table'); root.classList.add('show-board'); toggle.setAttribute('aria-pressed','false'); }
+      function toTable(){ root.classList.remove('show-board'); root.classList.add('show-table'); toggle.setAttribute('aria-pressed','true'); }
+      toggle.addEventListener('click', ()=>{ if(root.classList.contains('show-board')) toTable(); else toBoard(); });
+
+      // ---------------- Helpers ----------------
+      const uid = ()=>'id-'+Math.random().toString(36).slice(2,9);
+      const SNAP_CLASS = 'snap';
+      function addSnap(el){ el.classList.add(SNAP_CLASS); setTimeout(()=>el.classList.remove(SNAP_CLASS), 220); }
+      function getDockBodies(){ return Array.from(document.querySelectorAll('.dock-body:not(.is-min)')); }
+      function findDockBodyUnder(x, y){
+        const FUDGE = 28;
+        for(const db of getDockBodies()){
+          const r = db.getBoundingClientRect();
+          const inside = (x>=r.left+FUDGE && x<=r.right-FUDGE && y>=r.top+FUDGE && y<=r.bottom-FUDGE);
+          if(inside) return db;
+        }
+        return null;
+      }
+      function moveCardToContainer(card, row, container){
+        const rect = card.getBoundingClientRect();
+        const host = container.getBoundingClientRect();
+        row.x = Math.max(0, Math.min(host.width - rect.width, rect.left - host.left));
+        row.y = Math.max(0, Math.min(host.height - rect.height, rect.top - host.top));
+        container.appendChild(card);
+        const maxW = Math.max(60, host.width - row.x - 8);
+        const maxH = Math.max(30, host.height - row.y - 8);
+        if(typeof row.w === 'number'){ row.w = Math.min(row.w, maxW); card.style.width = row.w + 'px'; }
+        if(typeof row.h === 'number'){ row.h = Math.min(row.h, maxH); card.style.height = row.h + 'px'; }
+        card.style.left = row.x + 'px';
+        card.style.top = row.y + 'px';
+        addSnap(card);
+        saveModel();
+      }
+
+      // ---------------- Table ----------------
+      function renderTable(){
+        tbody.innerHTML = '';
+        model.rows.forEach(row => {
+          const tr = document.createElement('tr');
+          tr.dataset.id = row.id;
+          tr.innerHTML = `
+            <td><input type="checkbox" class="row-check"></td>
+            <td><input type="url" placeholder="https://..." value="${row.url||''}"></td>
+            <td><input type="text" placeholder="Button title" value="${row.title||''}"></td>
+            <td><input type="color" value="${row.color || '#006666'}"></td>
+            <td><button class="mini danger" title="Delete this row">Delete</button></td>
+          `;
+          const url = tr.querySelector('input[type=url]');
+          const title = tr.querySelector('input[type=text]');
+          const color = tr.querySelector('input[type=color]');
+          const del = tr.querySelector('button.mini.danger');
+
+          url.addEventListener('input', e=>{
+            const r=model.rows.find(x=>x.id===row.id); if(!r) return;
+            r.url=e.target.value;
+            const card=document.getElementById(row.cardId);
+            if(card){ const btn=card.querySelector('.card-btn'); if(btn){ btn.href=r.url||'#'; } }
+            saveModel();
+          });
+
+          title.addEventListener('input', e=>{
+            const r=model.rows.find(x=>x.id===row.id); if(!r) return;
+            r.title=e.target.value;
+            const card=document.getElementById(row.cardId);
+            if(card){ card.querySelector('.card-title').textContent=r.title||'Untitled'; }
+            saveModel();
+          });
+
+          color.addEventListener('input', e=>{
+            const r=model.rows.find(x=>x.id===row.id); if(!r) return;
+            r.color=e.target.value;
+            const card=document.getElementById(row.cardId);
+            if(card){
+              const btn=card.querySelector('.card-btn');
+              const strip=card.querySelector('.drag-strip');
+              if(btn){ btn.style.borderColor=r.color; btn.style.color=r.color; }
+              if(strip){ strip.style.background=r.color; }
+            }
+            saveModel();
+          });
+
+          del.addEventListener('click', ()=> deleteRow(row.id));
+          tbody.appendChild(tr);
+        });
+      }
+      function addRow(data={ url:'', title:'', color:'#006666' }){
+        snapshot();
+        const row = { id: uid(), cardId: uid(), x: undefined, y: undefined, w: undefined, h: undefined, parentDockId: null, ...data };
+        model.rows.push(row);
+        ensureCardForRow(row);
+        renderTable();
+        saveModel();
+      }
+      function deleteRow(id){
+        snapshot();
+        const row = model.rows.find(r=>r.id===id);
+        model.rows = model.rows.filter(r=>r.id!==id);
+        if(row){ const card = document.getElementById(row.cardId); card?.remove(); }
+        renderTable();
+        saveModel();
+      }
+      addRowBtn?.addEventListener('click', ()=> addRow());
+      deleteSelectedBtn?.addEventListener('click', ()=>{
+        const ids=[...tbody.querySelectorAll('tr')].filter(tr=>tr.querySelector('.row-check').checked).map(tr=>tr.dataset.id);
+        if(!ids.length) return;
+        snapshot();
+        ids.forEach(id=>{ const r=model.rows.find(x=>x.id===id); const el = r && document.getElementById(r.cardId); el?.remove(); });
+        model.rows = model.rows.filter(r=>!ids.includes(r.id));
+        renderTable();
+        saveModel();
+      });
+      selectAll?.addEventListener('change', (e)=>{ [...tbody.querySelectorAll('.row-check')].forEach(cb=>cb.checked=e.target.checked); });
+
+      // ---------------- Board: Cards ----------------
+      function ensureCardForRow(row){
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.id = row.cardId;
+        card.innerHTML = `
+          <a class="card-btn" target="_blank" rel="noopener" href="${row.url||'#'}">
+            <span class="drag-strip" aria-hidden="true"></span>
+            <span class="card-title">${row.title||'Untitled'}</span>
+            <span class="resize-handle" aria-hidden="true"></span>
+          </a>
+        `;
+        const btn = card.querySelector('.card-btn');
+        const strip = card.querySelector('.drag-strip');
+        const handle = card.querySelector('.resize-handle');
+
+        // apply color styling
+        if(row.color){
+          btn.style.borderColor=row.color;
+          btn.style.color=row.color;
+          strip.style.background=row.color; // solid left bar
+        }
+
+        // Flags scoped to this card
+        let isDragging = false;
+        let isResizing = false;
+        let ignoreNextClick = false;
+
+        // Clicks on the link should work unless we just dragged/resized
+        btn.addEventListener('click', (e)=>{
+          if (isDragging || isResizing || ignoreNextClick) {
+            e.preventDefault();
+            ignoreNextClick = false;
+          }
+        });
+
+        // Initial container and position
+        const container = row.parentDockId ? document.querySelector(`.dock[data-id="${row.parentDockId}"] .dock-body`) : boardGrid;
+        (container||boardGrid).appendChild(card);
+        const hostRect = (container||boardGrid).getBoundingClientRect();
+        const cw = Math.min(220, Math.max(160, card.offsetWidth||180));
+        const ch = card.offsetHeight||44;
+        if(typeof row.x!== 'number') row.x = Math.max(0, Math.min(hostRect.width - cw, 24 + Math.random()*(hostRect.width - cw - 48)));
+        if(typeof row.y!== 'number') row.y = Math.max(0, Math.min(hostRect.height - ch, 24 + Math.random()*(hostRect.height - ch - 48)));
+        card.style.left = row.x + 'px';
+        card.style.top  = row.y + 'px';
+        if(typeof row.w=== 'number') card.style.width = row.w + 'px';
+        if(typeof row.h=== 'number') card.style.height = row.h + 'px';
+
+        // DRAG: only from the left drag-strip
+        let dragging=false, startX=0,startY=0,startLeft=0,startTop=0;
+        strip.addEventListener('pointerdown',(ev)=>{
+          ev.preventDefault();
+          card.setPointerCapture?.(ev.pointerId);
+          startX=ev.clientX; startY=ev.clientY; startLeft=row.x; startTop=row.y; dragging=false; isDragging=false;
+          let containerEl = card.parentElement;
+
+          function onMove(e){
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            if(!dragging && (Math.abs(dx)>3 || Math.abs(dy)>3)) { dragging=true; isDragging=true; card.classList.add('dragging'); btn.style.pointerEvents='none'; }
+            if(!dragging) return;
+
+            // If currently inside a dock, eject near edges
+            if(containerEl && containerEl.classList && containerEl.classList.contains('dock-body')){
+              const pr = containerEl.getBoundingClientRect();
+              const EXIT = 24;
+              const nearEdge = (e.clientX <= pr.left + EXIT || e.clientX >= pr.right - EXIT || e.clientY <= pr.top + EXIT || e.clientY >= pr.bottom - EXIT);
+              if(nearEdge){
+                moveCardToContainer(card, row, boardGrid);
+                row.parentDockId = null;
+                containerEl = card.parentElement; // now the board
+                startX = e.clientX; startY = e.clientY;
+                startLeft = row.x; startTop = row.y;
+                return;
+              }
+            }
+            const r = containerEl.getBoundingClientRect();
+            const maxX = r.width - card.offsetWidth, maxY = r.height - card.offsetHeight;
+            row.x = Math.max(0, Math.min(maxX, startLeft + dx));
+            row.y = Math.max(0, Math.min(maxY, startTop + dy));
+            card.style.left = row.x + 'px'; card.style.top = row.y + 'px';
+          }
+
+          function onUp(e){
+            window.removeEventListener('pointermove',onMove);
+            window.removeEventListener('pointerup',onUp);
+            window.removeEventListener('pointercancel',onUp);
+            if(!dragging){ return; }
+            card.classList.remove('dragging'); isDragging=false; btn.style.pointerEvents='';
+            ignoreNextClick = true; // suppress only one click after drag
+            saveModel();
+
+            // Dock drop logic
+            const parentBody = card.parentElement;
+            if (parentBody && parentBody.classList && parentBody.classList.contains('dock-body')) {
+              const pr = parentBody.getBoundingClientRect();
+              const EXIT = 24;
+              const nearEdge = (e.clientX <= pr.left + EXIT || e.clientX >= pr.right - EXIT || e.clientY <= pr.top + EXIT || e.clientY >= pr.bottom - EXIT);
+              if (nearEdge) { moveCardToContainer(card, row, boardGrid); row.parentDockId = null; return; }
+            }
+            const drop=findDockBodyUnder(e.clientX, e.clientY);
+            if(drop && card.parentElement!==drop){ moveCardToContainer(card,row,drop); row.parentDockId=drop.closest('.dock').dataset.id; }
+            else if(!drop && card.parentElement!==boardGrid){ moveCardToContainer(card,row,boardGrid); row.parentDockId=null; }
+            else { addSnap(card); }
+          }
+
+          window.addEventListener('pointermove',onMove);
+          window.addEventListener('pointerup',onUp,{once:true});
+          window.addEventListener('pointercancel',onUp,{once:true});
+        });
+
+        // RESIZE: bottom-right corner only
+        handle.addEventListener('pointerdown',(ev)=>{ 
+          isResizing = true;
+          ev.preventDefault(); ev.stopPropagation();
+          const startX=ev.clientX; const startY=ev.clientY;
+          const startW=card.offsetWidth; const startH=card.offsetHeight;
+          const containerEl=card.parentElement;
+          let resizing=true;
+
+          function onMove(e){
+            if(!resizing) return;
+            const dx=e.clientX-startX; const dy=e.clientY-startY;
+            const hostRect=containerEl.getBoundingClientRect();
+            const left=parseFloat(card.style.left)||0; const top=parseFloat(card.style.top)||0;
+            let newW=Math.max(120,startW+dx); let newH=Math.max(36,startH+dy);
+            const maxW=hostRect.width-left-8; const maxH=hostRect.height-top-8;
+            if(newW>maxW) newW=maxW; if(newH>maxH) newH=maxH;
+            row.w=newW; row.h=newH; card.style.width=newW+'px'; card.style.height=newH+'px';
+          }
+
+          function onUp(){
+            resizing=false; isResizing = false; ignoreNextClick = true; addSnap(card);
+            saveModel();
+            window.removeEventListener('pointermove',onMove);
+            window.removeEventListener('pointerup',onUp);
+            window.removeEventListener('pointercancel',onUp);
+          }
+
+          window.addEventListener('pointermove',onMove);
+          window.addEventListener('pointerup',onUp,{once:true});
+          window.addEventListener('pointercancel',onUp,{once:true});
+        });
+      }
+
+      // ---------------- Board: Docks ----------------
+      addDockBtn?.addEventListener('click', ()=>{ snapshot(); model.docks.push({ id: uid(), name:'New Dock', minimized:false, x:undefined, y:undefined, w:420, h:240 }); renderDocks(); saveModel(); });
+
+      function renderDocks(){
+        document.querySelectorAll('.dock').forEach(d=>d.remove());
+        model.docks.forEach(dock=>{
+          const el=document.createElement('section'); el.className='dock'; el.dataset.id=dock.id;
+          el.innerHTML=`
+            <header class="dock-head">
+              <span class="dot dot-red" title="Delete"></span>
+              <span class="dot dot-yellow" title="Minimise"></span>
+              <span class="dock-title" contenteditable="true" spellcheck="false">${dock.name}</span>
+            </header>
+            <div class="dock-body${dock.minimized?' is-min':''}">
+              <div class="dock-glass"></div>
+            </div>
+            <span class="dock-resize"></span>
+          `;
+          boardGrid.appendChild(el);
+
+          // position/size
+          const body=el.querySelector('.dock-body');
+          const r=boardGrid.getBoundingClientRect();
+          if(typeof dock.x!=='number') dock.x=Math.max(0,Math.min(r.width-dock.w,40+Math.random()*(r.width-dock.w-80)));
+          if(typeof dock.y!=='number') dock.y=Math.max(0,Math.min(r.height-dock.h,40+Math.random()*(r.height-dock.h-80)));
+          el.style.left=dock.x+'px'; el.style.top=dock.y+'px'; el.style.width=dock.w+'px'; body.style.minHeight=dock.h+'px';
+
+          // drag by header (ignore title/dots)
+          const head=el.querySelector('.dock-head');
+          head.addEventListener('pointerdown',(ev)=>{
+            if(ev.target.closest('.dock-title,.dot')) return; // editing or buttons
+            const sx=ev.clientX, sy=ev.clientY; const bx=dock.x, by=dock.y; let dragging=false;
+            function onMove(e){
+              const dx=e.clientX-sx, dy=e.clientY-sy;
+              if(!dragging && (Math.abs(dx)>3||Math.abs(dy)>3)){ dragging=true; head.classList.add('dragging'); }
+              if(!dragging) return;
+              const br=boardGrid.getBoundingClientRect();
+              const maxX=br.width-el.offsetWidth; const maxY=br.height-el.offsetHeight;
+              dock.x=Math.max(0,Math.min(maxX,bx+dx)); dock.y=Math.max(0,Math.min(maxY,by+dy));
+              el.style.left=dock.x+'px'; el.style.top=dock.y+'px';
+            }
+            function onUp(){ head.classList.remove('dragging');
+              window.removeEventListener('pointermove',onMove);
+              window.removeEventListener('pointerup',onUp);
+              window.removeEventListener('pointercancel',onUp);
+              saveModel();
+            }
+            window.addEventListener('pointermove',onMove);
+            window.addEventListener('pointerup',onUp,{once:true});
+            window.addEventListener('pointercancel',onUp,{once:true});
+          });
+
+          // resize handle
+          const dockR=el.querySelector('.dock-resize');
+          dockR.addEventListener('pointerdown',(ev)=>{
+            ev.preventDefault(); ev.stopPropagation();
+            const sx=ev.clientX, sy=ev.clientY; const sw=el.offsetWidth, sh=el.offsetHeight;
+            function onMove(e){
+              const dx=e.clientX-sx, dy=e.clientY-sy;
+              const br=boardGrid.getBoundingClientRect();
+              let nw=Math.max(260,sw+dx), nh=Math.max(120,sh+dy);
+              const maxW=br.width-el.offsetLeft-8, maxH=br.height-el.offsetTop-8;
+              if(nw>maxW) nw=maxW; if(nh>maxH) nh=maxH;
+              el.style.width=nw+'px'; body.style.minHeight=nh+'px'; dock.w=nw; dock.h=nh;
+            }
+            function onUp(){ addSnap(el);
+              window.removeEventListener('pointermove',onMove);
+              window.removeEventListener('pointerup',onUp);
+              window.removeEventListener('pointercancel',onUp);
+              saveModel();
+            }
+            window.addEventListener('pointermove',onMove);
+            window.addEventListener('pointerup',onUp,{once:true});
+            window.addEventListener('pointercancel',onUp,{once:true});
+          });
+
+          // dots
+          const del=el.querySelector('.dot-red'); const min=el.querySelector('.dot-yellow'); const title=el.querySelector('.dock-title');
+          del.style.cursor='pointer'; min.style.cursor='pointer';
+          del.addEventListener('click',()=>{ if(!confirm('Delete this dock?')) return; snapshot();
+            const cards=el.querySelectorAll('.card');
+            cards.forEach(card=>{
+              const row=model.rows.find(r=>r.cardId===card.id);
+              if(row){ row.parentDockId=null; }
+              moveCardToContainer(card, row||{x:0,y:0}, boardGrid);
+            });
+            model.docks=model.docks.filter(d=>d.id!==dock.id); el.remove(); saveModel();
+          });
+          min.addEventListener('click',()=>{ snapshot(); dock.minimized=!dock.minimized; const bodyEl=el.querySelector('.dock-body'); bodyEl.classList.toggle('is-min',dock.minimized); el.classList.toggle('is-minimized',dock.minimized); saveModel(); });
+          title.addEventListener('input',()=>{ dock.name=title.textContent.trim()||'Dock'; saveModel(); });
+        });
+      }
+
+      // ---------------- Render ----------------
+      function renderAll(){
+        boardGrid.innerHTML='';
+        renderDocks();
+        model.rows.forEach(r=> ensureCardForRow(r));
+        renderTable();
+      }
+
+      // init
+      renderAll();
+      // ensure latest state saved after initial render (e.g., from empty state)
+      saveModel();
+    })();
+  </script>
+
+  <script>
+    // Add-on: auto-prepend protocol for URL inputs in the Table.
+    (function(){
+      const tbody = document.getElementById('linksTbody');
+      function normalizeUrlValue(v){
+        if(!v) return v;
+        const t = v.trim();
+        if(/^https?:\/\//i.test(t)) return t;               // already has protocol
+        if(/^www\./i.test(t)) return 'https://' + t;        // www.example.com → https://www.example.com
+        if(/^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(t)) return 'https://' + t; // bare domain
+        return t;
+      }
+      // Normalize on blur or change, then trigger existing 'input' logic
+      function maybeNormalize(e){
+        const el = e.target;
+        if(!(el && el.matches('input[type=url]'))) return;
+        const fixed = normalizeUrlValue(el.value);
+        if(fixed !== el.value){
+          el.value = fixed;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+      tbody?.addEventListener('blur', maybeNormalize, true);
+      tbody?.addEventListener('change', maybeNormalize, true);
+    })();
+  </script>
+</body>
+</html>
