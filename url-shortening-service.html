@@ -16,7 +16,7 @@
       --white:#fafeff;
       --radius:22px;
       --header-h:150px;
-      --dock-h:75px;
+      --dock-h:75px; /* unused */
       --ring: rgba(20,155,178,.25);
     }
     *{box-sizing:border-box}
@@ -28,9 +28,11 @@
         radial-gradient(1200px 800px at 10% -10%, rgba(20,155,178,.18), transparent 60%),
         radial-gradient(1200px 800px at 110% 110%, rgba(20,155,178,.12), transparent 60%),
         var(--secondary);
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
     }
 
-    /* Header (flat, 150px, logo only) */
+    /* Header */
     .header{
       position:sticky; top:0; z-index:50; height:var(--header-h);
       display:flex; align-items:center; justify-content:center; background: var(--white);
@@ -38,16 +40,14 @@
     }
     .header img{height:100%; width:auto; max-height:120px;}
 
-    /* Title identical to index */
-    .hub-title{
-      text-align:center; margin:20px 0; font-size:28px; font-weight:700; color:var(--accent);
-    }
+    /* Title removed; leave style harmlessly */
+    .hub-title{ display:none; }
 
-    /* ===== Locked Stage (identical to index.html) ===== */
+    /* ===== Stage container ===== */
     .container{
-      min-height:calc(100dvh - var(--header-h) - var(--dock-h));
+      min-height:calc(100dvh - var(--header-h));
       display:grid; place-items:center;
-      padding:10px 16px 120px;
+      padding:10px 16px 30px;
     }
     .stage{
       width:min(1200px, 94vw);
@@ -61,7 +61,6 @@
       display:flex; align-items:center; justify-content:center; text-align:center;
       overflow:hidden;
     }
-    /* ================================================ */
 
     /* Card/content */
     .wrap{max-width:820px; margin:0 auto; width:100%;}
@@ -80,13 +79,14 @@
     .label.flex{display:flex; align-items:center; gap:8px; position:relative}
     input[type="text"], input[type="password"], select{
       width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(0,0,0,.08);
-      background:#f6f8f9; color:var(--text); outline:none; transition:border .2s, box-shadow .2s
+      background:#f6f8f9; color:var(--text); outline:none; transition:border .2s, box-shadow .2s;
+      font-size:16px; /* prevent iOS zoom on focus */
     }
     input:focus, select:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--ring)}
     .invalid{border-color:#e53935 !important; box-shadow:0 0 0 4px rgba(229,57,53,.15) !important;}
 
     .help{
-      width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;
+      width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center;
       border-radius:50%; font-weight:700; font-size:12px; color:#0c2f35;
       background:rgba(20,155,178,.15); border:1px solid rgba(20,155,178,.35);
       cursor:default; user-select:none;
@@ -106,7 +106,7 @@
     .actions{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
     .btn{
       appearance:none; border:none; background:linear-gradient(180deg,var(--accent),#117a8c);
-      color:white; padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer
+      color:white; padding:12px 16px; border-radius:12px; font-weight:700; cursor:pointer
     }
     .btn.secondary{background:#e9f4f6; color:#0b2529; border:1px solid rgba(0,0,0,.08)}
     .btn:disabled{opacity:.5; cursor:not-allowed}
@@ -124,45 +124,88 @@
 
     .note{font-size:12px; color:#5a6a6f; margin-top:6px}
 
-    /* Dock — EXACT match to index.html */
-    .dock{
-      position:fixed; left:0; right:0; bottom:30px; height:var(--dock-h);
-      display:flex; align-items:center; justify-content:center; padding:0 16px; z-index:40;
-      pointer-events:none;
+    /* ===================== Responsive ===================== */
+
+    /* Tablets and down */
+    @media (max-width: 900px){
+      :root{ --header-h:120px; }
+      .header img{ max-height:100px; }
+      .stage{ width:min(1100px, 96vw); padding:22px; }
+      .card{ padding:20px; }
+      h1{ font-size:24px; }
     }
-    .dock-inner{
-      pointer-events:auto;
-      display:flex; gap:14px; padding:14px 16px;
-      border-radius: 50px;
-      background:linear-gradient(180deg, rgba(250,254,255,.70), rgba(250,254,255,.42));
-      border:1px solid rgba(255,255,255,.55);
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+    /* Phones */
+    @media (max-width: 640px){
+      :root{ --header-h:92px; }
+      .header{ border-bottom:1px solid #e6e6e6; }
+      .header img{ max-height:80px; }
+
+      .container{
+        min-height:calc(100dvh - var(--header-h));
+        padding:8px 12px 16px;
+      }
+      .stage{
+        width:100%;
+        min-height:unset; /* let content define height on small screens */
+        border-radius:18px;
+        padding:16px;
+      }
+      .wrap{ max-width:100%; }
+      .card{
+        padding:16px;
+        border-radius:16px;
+        box-shadow:0 8px 20px rgba(0,0,0,0.05);
+      }
+      h1{ font-size:20px; margin-bottom:12px; }
+
+      .label{ font-size:12px; }
+      input[type="text"], input[type="password"], select{
+        padding:12px 12px; border-radius:10px;
+      }
+
+      .row{ gap:10px; }
+      .row > *{ flex-basis:100%; } /* stack domain + alias */
+
+      .actions{
+        gap:8px;
+      }
+      .actions .btn{
+        width:100%; /* full-width buttons for easier tapping */
+        padding:13px 16px;
+        border-radius:12px;
+      }
+
+      .result-wrap{
+        grid-template-columns:1fr; /* stack result + open button */
+      }
+      .result-wrap .btn{
+        width:100%;
+      }
+
+      .tip{
+        max-width:86vw; /* keep tooltip within viewport */
+        word-wrap:break-word;
+      }
+      .note{ font-size:11.5px; }
     }
-    .tab{
-      appearance:none; border:none; text-decoration:none; cursor:pointer; user-select:none;
-      background:
-        radial-gradient(120% 160% at 50% -40%, rgba(20,155,178,.22), transparent 60%),
-        linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.75));
-      border:1px solid rgba(255,255,255,.7);
-      color:#12343b; font-weight:700; letter-spacing:.2px;
-      padding:12px 18px; min-width:200px; text-align:center; border-radius:var(--radius);
-      transition: transform .15s ease;
+
+    /* Very small phones */
+    @media (max-width: 380px){
+      :root{ --header-h:84px; }
+      .header img{ max-height:72px; }
+      h1{ font-size:18px; }
     }
-    .tab:hover{ transform: translateY(-2px);}
-    .tab:focus-visible{ outline: none; box-shadow: 0 0 0 5px var(--ring);}
-    @media (max-width:720px){ .tab{min-width:unset; font-size:14px; padding:10px 14px} }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header (logo links to home) -->
   <header class="header" role="banner">
-    <img src="logo.png" alt="Vivarch logo" />
+    <a href="index.html" aria-label="Go to home">
+      <img src="logo.png" alt="Vivarch logo" />
+    </a>
   </header>
-
-  <!-- Title -->
-  <div class="hub-title">Vivarch Tools Hub</div>
 
   <!-- Stage -->
   <main class="container" role="main">
@@ -228,15 +271,6 @@
       </div>
     </section>
   </main>
-
-  <!-- Dock -->
-  <nav class="dock" role="navigation" aria-label="Primary">
-    <div class="dock-inner">
-      <a class="tab" href="zone-allocation.html">Zone Allocation Search</a>
-      <a class="tab" href="qr-code-generator.html">QR Code Generator</a>
-      <a class="tab" href="url-shortening-service.html">URL Shortening Service</a>
-    </div>
-  </nav>
 
   <script>
     // ====== Config ======
