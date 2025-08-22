@@ -83,6 +83,14 @@
       font-weight:500;
     }
 
+    /* Smaller italic for desktop only notes */
+    .note-small {
+      font-size: 0.8em;
+      font-style: italic;
+      opacity: 0.9;
+      margin-left: 4px;
+    }
+
     @media (max-width:600px){
       .tool-box{font-size:14px; height:64px}
     }
@@ -104,8 +112,8 @@
         <div class="tools">
           <a class="tool-box" href="mobile-quoter.html">Mobile Quoter</a>
           <a class="tool-box" href="zone-allocation.html">Zone Search</a>
-          <a class="tool-box" href="qr-code-generator.html">QR Code (desktop only)</a>
-          <a class="tool-box" href="url-shortening-service.html">Short Link (desktop only)</a>
+          <a class="tool-box" href="qr-code-generator.html">QR Code <span class="note-small">(desktop only)</span></a>
+          <a class="tool-box" href="url-shortening-service.html">Short Link <span class="note-small">(desktop only)</span></a>
           <a class="tool-box" href="links-storage.html">Links Storage</a>
         </div>
 
