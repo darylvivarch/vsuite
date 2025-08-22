@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Vivarch · Zone Allocation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,8 +16,8 @@
       --white:#fafeff;
       --radius:22px;
       --header-h:150px;
-      --dock-h:75px;
       --ring: rgba(20,155,178,.25);
+      --safe-top: max(env(safe-area-inset-top), 0px);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -28,26 +28,25 @@
         radial-gradient(1200px 800px at 10% -10%, rgba(20,155,178,.18), transparent 60%),
         radial-gradient(1200px 800px at 110% 110%, rgba(20,155,178,.12), transparent 60%),
         var(--secondary);
+      -webkit-text-size-adjust:100%;
+      text-size-adjust:100%;
     }
 
-    /* Header (flat, 150px, logo only) */
+    /* Header: logo links to home */
     .header{
       position:sticky; top:0; z-index:50; height:var(--header-h);
       display:flex; align-items:center; justify-content:center; background: var(--white);
       border-bottom:1px solid #ddd;
+      padding-top: var(--safe-top);
     }
+    .header a{display:flex; height:100%; align-items:center}
     .header img{height:100%; width:auto; max-height:120px;}
 
-    /* Title (unchanged) */
-    .hub-title{
-      text-align:center; margin:20px 0; font-size:28px; font-weight:700; color:var(--accent);
-    }
-
-    /* === Locked Stage (identical spec) === */
+    /* Stage */
     .container{
-      min-height:calc(100dvh - var(--header-h) - var(--dock-h));
+      min-height:calc(100dvh - var(--header-h));
       display:grid; place-items:center;
-      padding:10px 16px 120px;
+      padding:10px 16px 40px;
     }
     .stage{
       width:min(1200px, 94vw);
@@ -59,21 +58,22 @@
       -webkit-backdrop-filter: blur(8px) saturate(140%);
       padding:28px;
       display:flex; align-items:center; justify-content:center; text-align:center;
-      overflow:hidden; /* keep stage uniform */
+      overflow:hidden;
     }
-    /* ==================================== */
 
-    /* Inner card/content */
     .wrap{max-width:980px; margin:0 auto; width:100%;}
     h1{margin:0 0 18px; text-align:center; font-weight:700; letter-spacing:.3px; color:var(--text); font-size:32px;}
 
+    /* Grey box removed: keep spacing only */
     .card{
-      background:#d1d6d7;
+      background:transparent;
+      border:0;
       border-radius:var(--radius);
       padding:28px;
-      box-shadow:0 18px 40px rgba(0,0,0,0.06);
+      box-shadow:none;
       text-align:left;
     }
+
     .suggestions{ position:relative; }
     .search{
       width:100%; border:none; outline:none;
@@ -87,11 +87,17 @@
       position:absolute; left:0; right:0; margin-top:8px; z-index:20;
       background:#fff; border:1px solid #e5e7eb; border-radius:14px;
       max-height:260px; overflow-y:auto; display:none;
+      -webkit-overflow-scrolling: touch;
     }
     .dropdown.visible{ display:block; }
     .sugg-item{ padding:12px 14px; cursor:pointer; color:var(--text); }
     .sugg-item:hover{ background:#f3f4f6; }
     .sugg-item:focus{ outline:3px solid #bfe8ef; outline-offset:-3px; }
+    .sugg-item.active{
+      background:#e9f6f9;
+      outline:2px solid rgba(20,155,178,.35);
+      outline-offset:-2px;
+    }
 
     .grid{
       display:grid; grid-template-columns:180px 1fr;
@@ -104,56 +110,40 @@
     .value{
       background:var(--accent); color:#fff; border-radius:var(--radius);
       padding:14px 16px; min-height:52px; display:flex; align-items:center; font-weight:600;
+      word-break: break-word;
+      text-transform:uppercase;   /* results show in uppercase */
     }
     .value.empty{ opacity:.65; }
 
     .footer-note{ margin-top:12px; font-size:12px; opacity:.85; text-align:center; }
 
-    /* === Locked Dock (exact from index.html) === */
-    .dock{
-      position:fixed; left:0; right:0; bottom:30px; height:var(--dock-h);
-      display:flex; align-items:center; justify-content:center; padding:0 16px; z-index:40;
-      pointer-events:none;
+    /* Mobile adjustments */
+    @media (max-width: 720px){
+      :root{ --header-h: 110px; }
+      .header img{ max-height:90px; }
+      .stage{ width:96vw; min-height:unset; padding:16px; }
+      .card{ padding:16px; text-align:center; }
+      h1{ font-size:22px; margin-bottom:14px; }
+      .search{ font-size:16px; padding:14px 14px; text-align:center; }
+      .grid{
+        grid-template-columns:1fr;
+        gap:10px; margin-top:14px; justify-items:stretch;
+      }
+      .grid > *{ width:100%; }
+      .tag, .value{ border-radius:18px; }
+      .value{ justify-content:center; }
     }
-    .dock-inner{
-      pointer-events:auto;
-      display:flex; gap:14px; padding:14px 16px;
-      border-radius: 50px;
-      background:linear-gradient(180deg, rgba(250,254,255,.70), rgba(250,254,255,.42));
-      border:1px solid rgba(255,255,255,.55);
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
-    }
-    .tab{
-      appearance:none; border:none; text-decoration:none; cursor:pointer; user-select:none;
-      background:
-        radial-gradient(120% 160% at 50% -40%, rgba(20,155,178,.22), transparent 60%),
-        linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.75));
-      border:1px solid rgba(255,255,255,.7);
-      color:#12343b; font-weight:700; letter-spacing:.2px;
-      padding:12px 18px; min-width:200px; text-align:center; border-radius:var(--radius);
-      transition: transform .15s ease;
-    }
-    .tab:hover{ transform: translateY(-2px);}
-    .tab:focus-visible{ outline: none; box-shadow: 0 0 0 5px var(--ring);}
-    @media (max-width:720px){
-      .tab{min-width:unset; font-size:14px; padding:10px 14px}
-      .grid{grid-template-columns:140px 1fr;}
-    }
-    /* ============================================= */
   </style>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header (logo goes home) -->
   <header class="header" role="banner">
-    <img src="logo.png" alt="Vivarch logo" />
+    <a href="index.html" aria-label="Go to home">
+      <img src="logo.png" alt="Vivarch logo" />
+    </a>
   </header>
 
-  <!-- Title -->
-  <div class="hub-title">Vivarch Tools Hub</div>
-
-  <!-- Stage -->
   <main class="container" role="main">
     <section class="stage" aria-live="polite">
       <div class="wrap">
@@ -161,15 +151,15 @@
           <h1>Zone Allocation Search</h1>
 
           <div class="suggestions">
-            <input id="q" type="text" class="search" placeholder="search here" autocomplete="off" />
+            <input id="q" type="text" class="search" placeholder="search here" autocomplete="off" aria-expanded="false" />
             <div id="dd" class="dropdown" role="listbox" aria-label="School suggestions"></div>
           </div>
 
           <div class="grid" aria-live="polite">
-            <div class="tag">ZONE</div>
+            <div class="tag">Zone</div>
             <div id="zone" class="value empty"></div>
 
-            <div class="tag">CONSULTANT</div>
+            <div class="tag">Consultant</div>
             <div id="consultant" class="value empty"></div>
           </div>
 
@@ -179,15 +169,6 @@
     </section>
   </main>
 
-  <!-- Dock -->
-  <nav class="dock" role="navigation" aria-label="Primary">
-    <div class="dock-inner">
-      <a class="tab" href="zone-allocation.html">Zone Allocation Search</a>
-      <a class="tab" href="qr-code-generator.html">QR Code Generator</a>
-      <a class="tab" href="url-shortening-service.html">URL Shortening Service</a>
-    </div>
-  </nav>
-
   <!-- Dataset -->
   <script src="reference.js"></script>
 
@@ -196,15 +177,14 @@
   (function () {
     let items = [];
     let q, dd, zoneEl, consEl;
+    let activeIndex = -1;
 
-    // Escape HTML
     function escapeHtml(s){
       return (s || '').toString().replace(/[&<>"']/g, m => ({
         '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
       })[m]);
     }
 
-    // Highlight term
     function highlight(text, term){
       const t = (term || '').toLowerCase();
       const src = (text || '');
@@ -215,19 +195,36 @@
              escapeHtml(src.slice(i+t.length));
     }
 
-    // Select a suggestion
+    function setActiveIndex(i){
+      const list = Array.from(dd.querySelectorAll('.sugg-item'));
+      list.forEach(el => el.classList.remove('active'));
+      if (i >= 0 && i < list.length){
+        activeIndex = i;
+        list[i].classList.add('active');
+        list[i].scrollIntoView({block:'nearest'});
+      } else {
+        activeIndex = -1;
+      }
+    }
+
     function selectRow(r){
       dd.classList.remove('visible');
+      q.setAttribute('aria-expanded', 'false');
       q.value = r.school;
       zoneEl.textContent = r.zone;       zoneEl.classList.remove('empty');
       consEl.textContent = r.consultant; consEl.classList.remove('empty');
+      setActiveIndex(-1);
     }
 
-    // Render suggestions
     function renderDropdown(rows, term){
       dd.innerHTML = '';
-      if (!term || rows.length === 0){ dd.classList.remove('visible'); return; }
-      rows.slice(0, 20).forEach((r)=>{
+      setActiveIndex(-1);
+      if (!term || rows.length === 0){
+        dd.classList.remove('visible');
+        q.setAttribute('aria-expanded', 'false');
+        return;
+      }
+      rows.slice(0, 20).forEach((r, idx)=>{
         const div = document.createElement('div');
         div.className = 'sugg-item';
         div.setAttribute('role','option');
@@ -235,18 +232,21 @@
         div.innerHTML = highlight(r.school, term);
         div.addEventListener('click', ()=>selectRow(r));
         div.addEventListener('keydown', (e)=>{ if(e.key==='Enter') selectRow(r); });
+        div.addEventListener('mouseenter', ()=> setActiveIndex(idx));
         dd.appendChild(div);
       });
       dd.classList.add('visible');
+      q.setAttribute('aria-expanded', 'true');
     }
 
-    // Filter on input
     function onInput(){
       const term = (q.value || '').trim().toLowerCase();
       if (!term){
         dd.classList.remove('visible');
+        q.setAttribute('aria-expanded', 'false');
         zoneEl.textContent=''; consEl.textContent='';
         zoneEl.classList.add('empty'); consEl.classList.add('empty');
+        setActiveIndex(-1);
         return;
       }
       const data = Array.isArray(window.SCHOOL_DATA) ? window.SCHOOL_DATA : [];
@@ -256,19 +256,36 @@
       renderDropdown(items, term);
     }
 
-    // Enter selects first suggestion
     function onKeyDown(e){
-      if (e.key !== 'Enter') return;
-      const first = dd.querySelector('.sugg-item');
-      if (first){ e.preventDefault(); first.click(); }
+      const open = dd.classList.contains('visible');
+      if (e.key === 'Enter'){
+        if (open){
+          const list = dd.querySelectorAll('.sugg-item');
+          if (activeIndex >= 0 && list[activeIndex]){ e.preventDefault(); list[activeIndex].click(); return; }
+          if (list[0]){ e.preventDefault(); list[0].click(); return; }
+        }
+        return;
+      }
+      if (!open) return;
+      if (e.key === 'ArrowDown'){ e.preventDefault(); move(1); }
+      else if (e.key === 'ArrowUp'){ e.preventDefault(); move(-1); }
+      else if (e.key === 'Escape'){ e.preventDefault(); dd.classList.remove('visible'); q.setAttribute('aria-expanded','false'); setActiveIndex(-1); }
+    }
+    function move(delta){
+      const list = dd.querySelectorAll('.sugg-item');
+      if (!list.length) return;
+      const next = ((activeIndex === -1 ? -1 : activeIndex) + delta + list.length) % list.length;
+      setActiveIndex(next);
     }
 
-    // Close dropdown on outside click
     function onDocClick(e){
-      if (!dd.contains(e.target) && e.target !== q) dd.classList.remove('visible');
+      if (!dd.contains(e.target) && e.target !== q){
+        dd.classList.remove('visible');
+        q.setAttribute('aria-expanded', 'false');
+        setActiveIndex(-1);
+      }
     }
 
-    // Init
     function init(){
       q = document.getElementById('q');
       dd = document.getElementById('dd');
