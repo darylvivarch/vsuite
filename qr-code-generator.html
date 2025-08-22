@@ -16,7 +16,7 @@
       --white:#fafeff;
       --radius:22px;
       --header-h:150px;
-      --dock-h:75px;
+      --dock-h:75px; /* kept for compatibility; no longer used */
       --ring: rgba(20,155,178,.25);
     }
     *{box-sizing:border-box}
@@ -38,16 +38,13 @@
     }
     .header img{height:100%; width:auto; max-height:120px;}
 
-    /* Title identical to index */
-    .hub-title{
-      text-align:center; margin:20px 0; font-size:28px; font-weight:700; color:var(--accent);
-    }
+    /* (hub-title removed) */
 
-    /* === Locked Stage (identical to index.html) === */
+    /* === Locked Stage (identical to index.html, adjusted spacing) === */
     .container{
-      min-height:calc(100dvh - var(--header-h) - var(--dock-h));
+      min-height:calc(100dvh - var(--header-h));  /* no dock; stage sits closer to header */
       display:grid; place-items:center;
-      padding:10px 16px 120px;
+      padding:10px 16px 20px;                     /* reduced bottom padding */
     }
     .stage{
       width:min(1200px, 94vw);
@@ -134,45 +131,19 @@
 
     .note{font-size:12px; color:#5a6a6f}
 
-    /* Dock — EXACT match to index.html */
-    .dock{
-      position:fixed; left:0; right:0; bottom:30px; height:var(--dock-h);
-      display:flex; align-items:center; justify-content:center; padding:0 16px; z-index:40;
-      pointer-events:none;
-    }
-    .dock-inner{
-      pointer-events:auto;
-      display:flex; gap:14px; padding:14px 16px;
-      border-radius: 50px;
-      background:linear-gradient(180deg, rgba(250,254,255,.70), rgba(250,254,255,.42));
-      border:1px solid rgba(255,255,255,.55);
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
-    }
-    .tab{
-      appearance:none; border:none; text-decoration:none; cursor:pointer; user-select:none;
-      background:
-        radial-gradient(120% 160% at 50% -40%, rgba(20,155,178,.22), transparent 60%),
-        linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.75));
-      border:1px solid rgba(255,255,255,.7);
-      color:#12343b; font-weight:700; letter-spacing:.2px;
-      padding:12px 18px; min-width:200px; text-align:center; border-radius:var(--radius);
-      transition: transform .15s ease;
-    }
-    .tab:hover{ transform: translateY(-2px);}
-    .tab:focus-visible{ outline: none; box-shadow: 0 0 0 5px var(--ring);}
-    @media (max-width:720px){ .tab{min-width:unset; font-size:14px; padding:10px 14px} }
+    /* Dock styles removed from use; keeping none */
   </style>
 </head>
 <body>
 
-  <!-- Header -->
+  <!-- Header (logo now clickable back to home) -->
   <header class="header" role="banner">
-    <img src="logo.png" alt="Vivarch logo" />
+    <a href="index.html" aria-label="Go to Home">
+      <img src="logo.png" alt="Vivarch logo" />
+    </a>
   </header>
 
-  <!-- Title -->
-  <div class="hub-title">Vivarch Tools Hub</div>
+  <!-- (Title removed) -->
 
   <!-- Stage -->
   <main class="container" role="main">
@@ -216,7 +187,7 @@
                 </div>
                 <div class="field">
                   <label class="label">Background</label>
-                  <input id="bg" type="color" value="#cdd2d4" />
+                  <input id="bg" type="color" value="#fafeff" />
                 </div>
                 <div class="field">
                   <label class="label" for="format">Format</label>
@@ -256,14 +227,7 @@
     </section>
   </main>
 
-  <!-- Dock -->
-  <nav class="dock" role="navigation" aria-label="Primary">
-    <div class="dock-inner">
-      <a class="tab" href="zone-allocation.html">Zone Allocation Search</a>
-      <a class="tab" href="qr-code-generator.html">QR Code Generator</a>
-      <a class="tab" href="url-shortening-service.html">URL Shortening Service</a>
-    </div>
-  </nav>
+  <!-- Dock removed -->
 
   <!-- QR library -->
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
