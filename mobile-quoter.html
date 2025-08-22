@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Mobile Quoter</title>
+<style>
+  :root{
+    --c-bg:#fafeff; --c-text:#4a4a4a; --c-accent:#006666;
+    --radius-lg:22px; --radius-md:16px;
+    --glass-bg:rgba(255,255,255,0.6); --glass-brd:rgba(255,255,255,0.45); --glass-brd-dark:rgba(0,0,0,0.06);
+    --shadow:0 10px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.5);
+    --warn:#d72c2c1a; --warn-brd:#d72c2c;
+    --footnote-h:28px; /* reserved vertical space for each footnote */
+  }
+
+  /* Freeze page scrolling and prevent accidental dragging */
+  html, body { height:100%; overflow:hidden; }
+  * { -webkit-user-drag:none; user-select:none; }
+  input, textarea { user-select:text; } /* but allow text selection in inputs */
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #dfffff 0%, #caf6ff 30%, #fafeff 60%, #fafeff 100%),
+      linear-gradient(180deg, #fafeff, #e9fdff 60%, #fafeff);
+    color:var(--c-text);
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+  }
+
+  /* Generic mobile frame */
+  .desk-wrap{ min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .device{
+    width:390px; height:844px; border-radius:48px;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,0.45), rgba(255,255,255,0.15)),
+      radial-gradient(120% 120% at 20% 0%, rgba(0,102,102,0.08), transparent 60%);
+    box-shadow:0 25px 60px rgba(0,0,0,0.25), inset 0 0 0 10px rgba(255,255,255,0.35), inset 0 0 0 2px rgba(0,0,0,0.08);
+    padding:14px; position:relative;
+  }
+  .screen{
+    height:100%;
+    background:rgba(255,255,255,0.35);
+    border-radius:34px;
+    overflow:hidden;             /* NO SCROLLING inside the phone (desktop) */
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.75), inset 0 -1px 0 rgba(0,0,0,0.06);
+    backdrop-filter:blur(28px) saturate(1.25);
+    -webkit-backdrop-filter:blur(28px) saturate(1.25);
+    display:flex; flex-direction:column;
+  }
+
+  /* Header: flat 80px */
+  header{
+    height:80px; min-height:80px; flex:0 0 80px;
+    background:#fafeff;
+    display:flex; align-items:center; gap:12px;
+    padding:8px 16px 8px 18px;
+    border-bottom:1px solid rgba(0,0,0,0.05);
+  }
+  header img{ height:56px; width:auto; border-radius:12px; }
+  header .title-wrap{ display:flex; flex-direction:column; }
+  header h1{ font-size:20px; line-height:1.1; margin:0; color:var(--c-accent); font-weight:700; }
+  header .subtitle{ margin-top:4px; font-size:12px; color:#5a5a5a; }
+
+  /* Content area is fixed-height and non-scrollable */
+  main{
+    flex:1 1 auto;
+    padding:16px;
+    padding-bottom:16px;
+    overflow:hidden;           /* lock content in place */
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .card{
+    background:radial-gradient(140% 130% at 20% 0%, rgba(0,102,102,0.07), transparent 60%), var(--glass-bg);
+    border:1px solid var(--glass-brd);
+    box-shadow:var(--shadow);
+    border-radius:var(--radius-lg);
+    padding:14px;
+  }
+  .group-title{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#2b6f6f; margin:2px 0 10px; font-weight:700; }
+
+  /* 2x2 Mode & Tax grid */
+  .mode-grid{ display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:60px; gap:10px; }
+  .mode-cell{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.65);
+    border:1px solid var(--glass-brd);
+    border-radius:var(--radius-md);
+    padding:12px;
+  }
+  .mode-cell input{ width:22px; height:22px; accent-color:var(--c-accent); }
+  .mode-cell label{ font-weight:600; }
+
+  /* Tables */
+  table{
+    width:100%; border-collapse:separate; border-spacing:0;
+    background:rgba(255,255,255,0.75);
+    border:1px solid var(--glass-brd);
+    border-radius:var(--radius-md);
+    overflow:hidden; box-shadow:inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  thead th{
+    background:linear-gradient(180deg, rgba(0,102,102,0.12), rgba(0,102,102,0));
+    color:var(--c-accent); font-weight:800; padding:10px 12px; text-align:left;
+    font-size:13px; border-bottom:1px solid rgba(0,0,0,0.06);
+  }
+  td, .cell-input, .mode-cell label, .right, .accent { font-size:15px; }
+  td{ padding:10px 12px; border-bottom:1px solid rgba(0,0,0,0.06); }
+  tr:last-child td{ border-bottom:none; }
+  .right{ text-align:right; }
+
+  .cell-input{
+    width:100%; border:none; outline:none; background:rgba(255,255,255,0.9);
+    border-radius:10px; padding:10px 10px;
+    box-shadow:inset 0 1px 0 rgba(0,0,0,0.03), inset 0 -1px 0 rgba(255,255,255,0.7);
+  }
+  .cell-input:focus{ box-shadow:0 0 0 3px rgba(0,102,102,0.15), inset 0 1px 0 rgba(0,0,0,0.03); }
+  .readonly{ background:transparent; box-shadow:none; padding-right:0; }
+
+  .total-row{ background:linear-gradient(180deg, rgba(0,102,102,0.06), rgba(255,255,255,0)); font-weight:800; }
+  .accent{ color:var(--c-accent); }
+
+  /* Footnotes: reserve fixed height so layout never shifts */
+  .muted{
+    color:#6d6d6d; font-size:12px; margin-top:6px;
+    min-height:var(--footnote-h);
+    visibility:hidden; /* takes up space but hidden */
+  }
+  .muted.show{ visibility:visible; }
+
+  /* Warnings & disabled rows */
+  .warn{ background:var(--warn) !important; border:1px solid var(--warn-brd) !important; }
+  .disabled-row{ opacity:.55; }
+  .disabled-row .cell-input{ background:rgba(0,0,0,0.03); }
+
+  /* ===== MOBILE-ONLY ADJUSTMENTS (desktop unchanged) ===== */
+  @media (max-width:480px){
+    .desk-wrap{ padding:0; }
+    .device{
+      width:100vw;
+      height:100dvh;            /* dynamic viewport to avoid iOS URL bar clipping */
+      border-radius:0; padding:0; box-shadow:none; background:none;
+    }
+    .screen{
+      border-radius:0;
+      overflow:auto !important;         /* allow touch scroll inside phone on mobile */
+      -webkit-overflow-scrolling:touch; /* smooth iOS scroll */
+      scrollbar-width:none;             /* hide scrollbar (Firefox) */
+      scrollbar-gutter:stable both-edges;
+    }
+    .screen::-webkit-scrollbar{ width:0; height:0; } /* hide scrollbar (WebKit) */
+
+    /* Keep header visible while content scrolls */
+    header{ position:sticky; top:0; z-index:10; }
+
+    /* Extra bottom room so footnotes never get clipped */
+    main{
+      overflow:visible;
+      padding-bottom:calc(var(--footnote-h) + 32px + env(safe-area-inset-bottom));
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="desk-wrap">
+    <div class="device">
+      <div class="screen">
+        <header>
+          <img src="logo.png" alt="Logo">
+          <div class="title-wrap">
+            <h1>Mobile Quoter</h1>
+            <div class="subtitle">Package • Participant • Hour</div>
+          </div>
+        </header>
+
+        <main>
+          <section class="card">
+            <div class="group-title">Mode & Tax</div>
+            <div class="mode-grid">
+              <div class="mode-cell">
+                <input type="radio" name="mode" id="modeParticipant" value="participant">
+                <label for="modeParticipant">Participant</label>
+              </div>
+              <div class="mode-cell">
+                <input type="radio" name="mode" id="modePackage" value="package">
+                <label for="modePackage">Package</label>
+              </div>
+              <div class="mode-cell">
+                <input type="radio" name="mode" id="modeHour" value="hour">
+                <label for="modeHour">Hour</label>
+              </div>
+              <div class="mode-cell">
+                <input type="checkbox" id="withGst">
+                <label for="withGst">With GST</label>
+              </div>
+            </div>
+          </section>
+
+          <!-- Package -->
+          <section class="card" id="pkgCard" style="display:none;">
+            <div class="group-title">Package</div>
+            <table aria-label="Package Table">
+              <tbody>
+                <tr>
+                  <td><strong>Package</strong></td>
+                  <td class="right">
+                    <input class="cell-input" id="pkgPrice" inputmode="decimal" placeholder="$ 0.00" aria-label="Package Price">
+                  </td>
+                </tr>
+                <tr class="total-row">
+                  <td><strong class="accent">TOTAL</strong></td>
+                  <td class="right">
+                    <input class="cell-input readonly" id="pkgTotal" readonly tabindex="-1" aria-label="Package Total">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="muted" id="pkgNote">Total reflects an additional 9% Singapore GST.</div>
+          </section>
+
+          <!-- Participant -->
+          <section class="card" id="paxCard" style="display:none;">
+            <div class="group-title">Participant</div>
+            <table aria-label="Participant Table">
+              <thead>
+                <tr>
+                  <th>Number of Pax</th>
+                  <th class="right">Cost per Pax</th>
+                  <th class="right">Subtotal Cost</th>
+                </tr>
+              </thead>
+              <tbody id="paxBody"></tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td colspan="2"><strong class="accent">Total Cost</strong></td>
+                  <td class="right">
+                    <input class="cell-input readonly" id="paxTotal" readonly tabindex="-1" aria-label="Participant Total">
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+            <div class="muted" id="paxNote">Total reflects an additional 9% Singapore GST.</div>
+          </section>
+
+          <!-- Hour -->
+          <section class="card" id="hourCard" style="display:none;">
+            <div class="group-title">Hour</div>
+            <table aria-label="Hour Table">
+              <thead>
+                <tr>
+                  <th>Number of Hours</th>
+                  <th class="right">Cost per Hour</th>
+                  <th class="right">Subtotal Cost</th>
+                </tr>
+              </thead>
+              <tbody id="hourBody"></tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td colspan="2"><strong class="accent">Total Cost</strong></td>
+                  <td class="right">
+                    <input class="cell-input readonly" id="hourTotal" readonly tabindex="-1" aria-label="Hour Total">
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+            <div class="muted" id="hourNote">Total reflects an additional 9% Singapore GST.</div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const fmt = new Intl.NumberFormat('en-SG', { style:'currency', currency:'SGD' });
+  const GST_RATE = 0.09;
+
+  const modePackage = document.getElementById('modePackage');
+  const modeParticipant = document.getElementById('modeParticipant');
+  const modeHour = document.getElementById('modeHour');
+  const withGst = document.getElementById('withGst');
+
+  const pkgCard = document.getElementById('pkgCard');
+  const paxCard = document.getElementById('paxCard');
+  const hourCard = document.getElementById('hourCard');
+
+  const pkgPrice = document.getElementById('pkgPrice');
+  const pkgTotal = document.getElementById('pkgTotal');
+
+  const paxBody = document.getElementById('paxBody');
+  const paxTotal = document.getElementById('paxTotal');
+
+  const hourBody = document.getElementById('hourBody');
+  const hourTotal = document.getElementById('hourTotal');
+
+  const pkgNote = document.getElementById('pkgNote');
+  const paxNote = document.getElementById('paxNote');
+  const hourNote = document.getElementById('hourNote');
+
+  function parseCurrency(str){ if(!str) return 0; const c=String(str).replace(/[^\d.]/g,''); return c?parseFloat(c):0; }
+  function parseIntOnly(str){ const c=String(str).replace(/[^\d]/g,''); return c?parseInt(c,10):0; }
+  function setCurrency(el, v){ el.value = v === '' ? '' : fmt.format(v); }
+
+  function buildRows(tbody, type){
+    tbody.innerHTML='';
+    for(let i=0;i<5;i++){
+      const tr=document.createElement('tr');
+
+      const tdA=document.createElement('td');
+      const inpA=document.createElement('input');
+      inpA.className='cell-input'; inpA.inputMode='numeric'; inpA.placeholder='0'; inpA.dataset.role=type+'-qty';
+      tdA.appendChild(inpA);
+
+      const tdB=document.createElement('td'); tdB.className='right';
+      const inpB=document.createElement('input');
+      inpB.className='cell-input'; inpB.inputMode='decimal'; inpB.placeholder='$ 0.00'; inpB.dataset.role=type+'-rate';
+      tdB.appendChild(inpB);
+
+      const tdC=document.createElement('td'); tdC.className='right';
+      const outC=document.createElement('input');
+      outC.className='cell-input readonly'; outC.readOnly=true; outC.tabIndex=-1; outC.dataset.role=type+'-subtotal';
+      tdC.appendChild(outC);
+
+      tr.append(tdA,tdB,tdC); tbody.appendChild(tr);
+
+      inpA.addEventListener('input',()=>{ inpA.value=inpA.value.replace(/[^\d]/g,''); recalcAll(); });
+      inpB.addEventListener('input',()=>recalcAll());
+      inpB.addEventListener('blur',()=>{ const v=parseCurrency(inpB.value); inpB.value=v?fmt.format(v):''; });
+
+      [inpA,inpB].forEach(el=>{
+        el.addEventListener('keydown',(e)=>{
+          if(e.key==='Enter'){ e.preventDefault(); focusNextEditable(e.target); }
+        });
+      });
+    }
+  }
+  buildRows(paxBody,'pax'); buildRows(hourBody,'hour');
+
+  function focusNextEditable(current){
+    const card=current.closest('section.card');
+    const inputs=[...card.querySelectorAll('input.cell-input:not(.readonly)')];
+    const idx=inputs.indexOf(current);
+    if(idx>=0 && idx<inputs.length-1) inputs[idx+1].focus();
+  }
+
+  function showCard(which){
+    pkgCard.style.display = (which==='package')?'':'none';
+    paxCard.style.display = (which==='participant')?'':'none';
+    hourCard.style.display= (which==='hour')?'':'none';
+    updateFootnotes();
+  }
+
+  modePackage.addEventListener('change',()=>{ if(modePackage.checked){ withGst.checked=true; showCard('package'); recalcAll(); pkgPrice.focus(); } });
+  modeParticipant.addEventListener('change',()=>{ if(modeParticipant.checked){ showCard('participant'); recalcAll(); const f=paxBody.querySelector('input[data-role="pax-qty"]'); if(f) f.focus(); } });
+  modeHour.addEventListener('change',()=>{ if(modeHour.checked){ showCard('hour'); recalcAll(); const f=hourBody.querySelector('input[data-role="hour-qty"]'); if(f) f.focus(); } });
+  withGst.addEventListener('change',()=>{ updateFootnotes(); recalcAll(); });
+
+  pkgPrice.addEventListener('input',recalcAll);
+  pkgPrice.addEventListener('blur',()=>{ const v=parseCurrency(pkgPrice.value); pkgPrice.value=v?fmt.format(v):''; });
+  pkgPrice.addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ e.preventDefault(); } });
+
+  function updateFootnotes(){
+    const on=withGst.checked;
+    // keep space reserved; only toggle visibility
+    pkgNote.classList.toggle('show', on);
+    paxNote.classList.toggle('show', on);
+    hourNote.classList.toggle('show', on);
+  }
+
+  function recalcPackage(){
+    const base=parseCurrency(pkgPrice.value);
+    const total=withGst.checked? base*(1+GST_RATE): base;
+    setCurrency(pkgTotal, isFinite(total)? total:0);
+  }
+
+  function recalcMatrix(tbody, totalOut){
+    let sum=0;
+    tbody.querySelectorAll('tr').forEach(tr=>{
+      tr.classList.remove('disabled-row');
+      const qtyEl=tr.querySelector('input[data-role$="-qty"]');
+      const rateEl=tr.querySelector('input[data-role$="-rate"]');
+      const subEl=tr.querySelector('input[data-role$="-subtotal"]');
+
+      qtyEl.classList.remove('warn'); rateEl.classList.remove('warn');
+
+      const qtyRaw=qtyEl.value.trim(); const rateRaw=rateEl.value.trim();
+      const hasQty=qtyRaw.length>0; const hasRate=rateRaw.length>0;
+
+      if(!hasQty && !hasRate){ tr.classList.add('disabled-row'); subEl.value=''; return; }
+      if(hasQty && !hasRate){ rateEl.classList.add('warn'); subEl.value=''; return; }
+      if(!hasQty && hasRate){ qtyEl.classList.add('warn'); subEl.value=''; return; }
+
+      const qty=parseIntOnly(qtyRaw); const rate=parseCurrency(rateRaw);
+      const sub=qty*rate;
+      setCurrency(subEl, sub?sub:0);
+      sum+=sub;
+    });
+    const final=withGst.checked? sum*(1+GST_RATE): sum;
+    setCurrency(totalOut, final);
+  }
+
+  function recalcAll(){
+    if(modePackage.checked) recalcPackage();
+    if(modeParticipant.checked) recalcMatrix(paxBody, paxTotal);
+    if(modeHour.checked) recalcMatrix(hourBody, hourTotal);
+  }
+
+  // Initial state: fixed-layout friendly
+  modePackage.checked=true; withGst.checked=true;
+  showCard('package'); updateFootnotes(); recalcAll();
+
+  window.addEventListener('pageshow', recalcAll);
+</script>
+</body>
+</html>
