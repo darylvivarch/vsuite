@@ -59,12 +59,13 @@
       display:flex; flex-direction:column; gap:16px; margin-top:10px;
     }
     .tool-box{
-      display:flex; align-items:center; justify-content:center;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
       text-decoration:none; color:#fff; font-weight:600; font-size:16px;
-      height:70px; border-radius:var(--radius);
+      height:60px; border-radius:var(--radius); /* reduced height */
       background:var(--accent);
       box-shadow:0 4px 10px rgba(20,155,178,.25);
       transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+      line-height:1.2;
     }
     .tool-box:hover{
       transform: translateY(-3px);
@@ -85,14 +86,16 @@
 
     /* Smaller italic for desktop only notes */
     .note-small {
-      font-size: 0.8em;
+      display:block;
+      font-size: 0.75em;
       font-style: italic;
       opacity: 0.9;
-      margin-left: 4px;
+      margin-top: 2px;
+      font-weight:400;
     }
 
     @media (max-width:600px){
-      .tool-box{font-size:14px; height:64px}
+      .tool-box{font-size:14px; height:54px} /* scaled down for mobile */
     }
   </style>
 </head>
@@ -112,8 +115,12 @@
         <div class="tools">
           <a class="tool-box" href="mobile-quoter.html">Mobile Quoter</a>
           <a class="tool-box" href="zone-allocation.html">Zone Search</a>
-          <a class="tool-box" href="qr-code-generator.html">QR Code <span class="note-small">(desktop only)</span></a>
-          <a class="tool-box" href="url-shortening-service.html">Short Link <span class="note-small">(desktop only)</span></a>
+          <a class="tool-box" href="qr-code-generator.html">
+            QR Code <span class="note-small">(desktop only)</span>
+          </a>
+          <a class="tool-box" href="url-shortening-service.html">
+            Short Link <span class="note-small">(desktop only)</span>
+          </a>
           <a class="tool-box" href="links-storage.html">Links Storage</a>
         </div>
 
