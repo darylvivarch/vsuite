@@ -51,12 +51,15 @@
     .header{
       position:sticky; top:0; z-index:50; height:var(--header-h);
       display:flex; align-items:center; justify-content:center;
-      background: rgba(250,254,255,.55); /* more translucent */
-      backdrop-filter: blur(10px) saturate(160%);
-      -webkit-backdrop-filter: blur(10px) saturate(160%);
-      border-bottom:1px solid rgba(255,255,255,.4);
+      background: rgba(250,254,255,.82); /* less translucent, more solid */
+      backdrop-filter: blur(6px) saturate(140%);
+      -webkit-backdrop-filter: blur(6px) saturate(140%);
+      border-bottom:1px solid rgba(0,0,0,.08); /* subtle darker border */
     }
-    .header img{height:100%; width:auto; max-height:100px; cursor:pointer;}
+    .header img{
+      height:100%; width:auto; max-height:100px; cursor:pointer;
+      /* shadow removed */
+    }
 
     /* ===== Stage ===== */
     .container{
@@ -65,7 +68,7 @@
     }
     .stage{
       width:min(520px, 94vw);
-      background: rgba(255,255,255,.42); /* more translucent */
+      background: rgba(255,255,255,.42); /* translucent content box */
       border-radius:var(--radius);
       backdrop-filter: blur(18px) saturate(160%);
       -webkit-backdrop-filter: blur(18px) saturate(160%);
@@ -107,8 +110,8 @@
     .tool-box:focus-visible{ outline:none; box-shadow:0 0 0 6px var(--ring);}
 
     .note{
-      margin-top:20px; font-size:11.5px; color:var(--accent); line-height:1.4; font-weight:500;
-      text-shadow: 0 1px 1px rgba(0,0,0,.2);
+      margin-top:20px; font-size:11.5px; color:#fff; line-height:1.4; font-weight:500;
+      text-shadow: 0 1px 2px rgba(0,0,0,.4); /* white text for contrast */
     }
     .note-small { display:block; font-size:.75em; font-style:italic; opacity:.9; margin-top:2px; font-weight:400; color:#e7fbff }
 
