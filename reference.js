@@ -229,7 +229,7 @@ window.SCHOOL_DATA = [
   { school: 'Assumption Pathway School', consultant: 'Sarah', zone: 'West' },
   { school: 'Beacon Primary School', consultant: 'Sarah', zone: 'West' },
   { school: 'Boon Lay Garden Primary School', consultant: 'Sarah', zone: 'West' },
-  { school: 'Boon Lay Secondary School', consultant: 'Sarah', zone: 'West' },
+  { school: 'Boon Lay Secondary School', consultant: 'Krystle', zone: 'West' },
   { school: 'Bt Panjang Govt High School', consultant: 'Sarah', zone: 'West' },
   { school: 'Bukit Batok Secondary School', consultant: 'Sarah', zone: 'West' },
   { school: 'Bukit Panjang Primary School', consultant: 'Sarah', zone: 'West' },
