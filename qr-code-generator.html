@@ -18,23 +18,27 @@
       --header-h:150px;
       --dock-h:75px; /* kept for compatibility; no longer used */
       --ring: rgba(20,155,178,.25);
+    --shadow-light: 8px 8px 24px #d1d9e6, -8px -8px 24px #ffffff;
+    --shadow-inset: inset 4px 4px 12px #d1d9e6, inset -4px -4px 12px #ffffff;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; font-family:'Montserrat',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       color:var(--text);
+      background: var(--secondary);
       background:
         radial-gradient(1200px 800px at 10% -10%, rgba(20,155,178,.18), transparent 60%),
         radial-gradient(1200px 800px at 110% 110%, rgba(20,155,178,.12), transparent 60%),
-        var(--secondary);
+        linear-gradient(135deg, #e0e5ec 0%, #fafeff 100%);
     }
 
     /* Header (flat, 150px, logo only) */
     .header{
-      position:sticky; top:0; z-index:50; height:var(--header-h);
-      display:flex; align-items:center; justify-content:center; background: var(--white);
-      border-bottom:1px solid #ddd;
+  position:sticky; top:0; z-index:50; height:var(--header-h);
+  display:flex; align-items:center; justify-content:center; background: var(--white);
+  border-bottom:1px solid #ddd;
+  box-shadow: var(--shadow-light);
     }
     .header img{height:100%; width:auto; max-height:120px;}
 
@@ -47,30 +51,27 @@
       padding:10px 16px 20px;                     /* reduced bottom padding */
     }
     .stage{
-      width:min(1200px, 94vw);
-      min-height:min(600px, 62vh);
-      background:linear-gradient(180deg, rgba(250,254,255,.92), rgba(250,254,255,.72));
-      border:1px solid rgba(255,255,255,.65);
-      border-radius:var(--radius);
-      backdrop-filter: blur(8px) saturate(140%);
-      -webkit-backdrop-filter: blur(8px) saturate(140%);
-      padding:28px;
-      display:flex; align-items:center; justify-content:center; text-align:center;
-      overflow:hidden;
+  width:min(1200px, 94vw);
+  min-height:min(600px, 62vh);
+  background: #e0e5ec;
+  border-radius:var(--radius);
+  box-shadow: var(--shadow-light);
+  padding:28px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  overflow:hidden;
     }
     /* ============================================= */
 
     /* Card/content (lock inside the stage) */
     .wrap{max-width:1100px; margin:0 auto; width:100%; height:100%;}
     .card{
-      background:#fafeff;
-      border-radius:var(--radius);
-      padding:20px;
-      border:1px solid rgba(0,0,0,.06);
-      box-shadow:0 12px 30px rgba(0,0,0,0.06);
-      text-align:left;
-      height:100%;
-      overflow:auto;          /* scroll inside card if needed; stage never grows */
+  background:#fafeff;
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow: var(--shadow-light);
+  text-align:left;
+  height:100%;
+  overflow:auto;          /* scroll inside card if needed; stage never grows */
     }
     h1{margin:0 0 16px; text-align:center; font-weight:700; color:var(--text); font-size:26px;}
 
@@ -87,39 +88,98 @@
     .field{display:flex; flex-direction:column; gap:8px; margin-bottom:12px}
     .label{font-size:12px; color:#5a6a6f}
     input[type="text"], textarea, select, input[type="number"]{
-      width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.08);
-      background:#f6f8f9; color:var(--text); outline:none; transition:border .2s, box-shadow .2s
+  width:100%; padding:10px 12px; border-radius:12px; border:none;
+  background:#e0e5ec; color:var(--text); outline:none; transition:border .2s, box-shadow .2s;
+  box-shadow: var(--shadow-inset);
     }
     input:focus, textarea:focus, select:focus{border-color:var(--accent); box-shadow:0 0 0 4px var(--ring)}
-    textarea{min-height:88px; resize:vertical}
+  textarea{min-height:88px; resize:vertical}
     input[type="color"]{background:transparent; border:none; padding:0; width:40px; height:40px; border-radius:8px}
+    input[type="color"]{
+      background:#e0e5ec;
+      box-shadow: var(--shadow-inset);
+      border:none; padding:0; width:40px; height:40px; border-radius:8px
+    }
+    /* Custom file input for neumorphism */
+    .file-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    #logo {
+      opacity: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      z-index: 2;
+    }
+    .file-label {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #e0e5ec;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 0;
+  height: 40px;
+  box-shadow: var(--shadow-light);
+  cursor: pointer;
+  transition: box-shadow .2s, background .2s;
+  position: relative;
+  z-index: 1;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
+    }
+    .file-label:active {
+      box-shadow: var(--shadow-inset);
+      background: #fafeff;
+    }
     .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
     .row > *{flex:1}
     .btn{
-      appearance:none; border:none; background:linear-gradient(180deg,var(--accent),#117a8c);
-      color:white; padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer
+      appearance:none; border:none; background:#e0e5ec;
+      color:var(--accent); padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
+      box-shadow: var(--shadow-light);
+      transition: box-shadow .2s, background .2s;
+    }
+    .btn:active {
+      box-shadow: var(--shadow-inset);
+      background: #fafeff;
     }
     .btn.secondary{background:#e9f4f6; color:#0b2529; border:1px solid rgba(0,0,0,.08)}
+    .btn.secondary{
+      background:#e9f4f6;
+      color:#0b2529;
+      box-shadow: var(--shadow-light);
+    }
     .btn:disabled{opacity:.5; cursor:not-allowed}
 
     /* Right: Preview column — compact, never pushes layout */
     .qr-card{
-      background:#ffffffd0;
-      border:1px solid rgba(0,0,0,.06);
-      border-radius:16px;
-      padding:16px;
-      display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:12px;
-      height:100%;
-      min-height:0;
+  background:#fafeff;
+  border-radius:16px;
+  padding:16px;
+  box-shadow: var(--shadow-light);
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:12px;
+  height:100%;
+  min-height:0;
     }
     .qr-box{
-      position:relative;
-      flex:0 0 auto;
-      width:clamp(220px, 34vw, 340px);  /* ⬅️ compact + responsive */
-      aspect-ratio:1/1;                 /* always square */
-      background:#f0f3f4; border:1px dashed rgba(0,0,0,.12); border-radius:14px;
-      overflow:hidden; padding:10px;
-      margin-top:4px;
+  position:relative;
+  flex:0 0 auto;
+  width:clamp(220px, 34vw, 340px);  /* ⬅️ compact + responsive */
+  aspect-ratio:1/1;                 /* always square */
+  background:#e0e5ec;
+  border-radius:14px;
+  box-shadow: var(--shadow-inset);
+  overflow:hidden; padding:10px;
+  margin-top:4px;
     }
 
     /* Canvas scales to the box; never changes layout height */
@@ -163,7 +223,7 @@
               <div class="row">
                 <div class="field">
                   <label class="label" for="size">Size (px)</label>
-                  <input id="size" type="number" min="128" max="1024" step="16" value="384" />
+                  <input id="size" type="number" min="128" max="2048" step="16" value="1080" />
                 </div>
                 <div class="field">
                   <label class="label" for="margin">Quiet zone (margin)</label>
@@ -203,7 +263,10 @@
               <div class="row">
                 <div class="field">
                   <label class="label" for="logo">Logo (optional)</label>
-                  <input id="logo" type="file" accept="image/*" />
+                  <div class="file-input-wrapper">
+                    <label for="logo" class="file-label">Choose file</label>
+                    <input id="logo" type="file" accept="image/*" />
+                  </div>
                 </div>
                 <div class="row" style="flex:1">
                   <button id="download" class="btn">Download</button>
@@ -249,8 +312,8 @@
       };
 
       const qr = new QRCodeStyling({
-        width: 384,
-        height: 384,
+  width: 1080,
+  height: 1080,
         type: 'canvas',
         data: '',
         margin: parseInt(els.margin.value,10),
