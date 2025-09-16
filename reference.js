@@ -1,7 +1,7 @@
 // reference.js
 // Exposes school data on the global window so any page can use it.
 window.SCHOOL_DATA = [
-  { school: 'Greendale Primary School', consultant: 'Charlynn', zone: 'East' },
+  { school: "Greendale Primary School", consultant: "Charlynn", zone: "East" },
   { school: 'Horizon Primary School', consultant: 'Charlynn', zone: 'East' },
   { school: 'Punggol Secondary School', consultant: 'Charlynn', zone: 'East' },
   { school: 'Admiralty Primary School', consultant: 'Charlynn', zone: 'North' },
