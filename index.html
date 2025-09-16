@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vivarch · Tools Hub</title>
+
+  <!-- Favicon / Icons -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="logo.png" />
+
+  <style>
+    :root{
+      --accent:#149bb2;
+      --text:#243036;
+      --text-soft:#45555c;
+      --radius:26px;
+      --header-h:120px;
+      --ring: rgba(20,155,178,.28);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+
+    body{
+      margin:0;
+      font-family:'Montserrat',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      background:#0b1a20;
+    }
+
+    /* Background image */
+    .bg {
+      position: fixed; inset: 0; z-index:-2;
+      background:url("marina-bay.jpg") center 60% / cover no-repeat;
+      background-attachment: fixed;
+    }
+    .bg::after{
+      content:""; position:absolute; inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 32%, rgba(0,0,0,.25) 100%);
+      pointer-events:none;
+    }
+
+    /* ===== Header ===== */
+    .header{
+      position:sticky; top:0; z-index:50; height:var(--header-h);
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(250,254,255,.82); /* less translucent, more solid */
+      backdrop-filter: blur(6px) saturate(140%);
+      -webkit-backdrop-filter: blur(6px) saturate(140%);
+      border-bottom:1px solid rgba(0,0,0,.08); /* subtle darker border */
+    }
+    .header img{
+      height:100%; width:auto; max-height:100px; cursor:pointer;
+      /* shadow removed */
+    }
+
+    /* ===== Stage ===== */
+    .container{
+      min-height:calc(100dvh - var(--header-h));
+      display:flex; align-items:flex-start; justify-content:center; padding:22px;
+    }
+    .stage{
+      width:min(520px, 94vw);
+      background: rgba(255,255,255,.42); /* translucent content box */
+      border-radius:var(--radius);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      padding:28px 24px;
+      text-align:center;
+      box-shadow:0 8px 26px rgba(0,0,0,0.22);
+    }
+
+    .placeholder h2{
+      margin:0 0 12px; font-size:24px; font-weight:600;
+      color:var(--text);
+      text-shadow: 0 1px 2px rgba(0,0,0,.25);
+    }
+    .placeholder p{
+      margin:0 0 20px; line-height:1.6; font-size:15px;
+      color:var(--text-soft);
+      text-shadow: 0 1px 2px rgba(0,0,0,.2);
+    }
+
+    /* Tool links */
+    .tools{display:flex; flex-direction:column; gap:16px; margin-top:10px;}
+    .tool-box{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      text-decoration:none; color:#fff; font-weight:600; font-size:16px;
+      height:60px; border-radius:999px;
+      background:linear-gradient(180deg, #18a8c1, #118399);
+      border:1px solid rgba(255,255,255,.35);
+      box-shadow:0 6px 14px rgba(17,131,153,.35);
+      transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+      line-height:1.2;
+      text-shadow: 0 1px 1px rgba(0,0,0,.25);
+    }
+    .tool-box:hover{
+      transform: translateY(-2px);
+      filter: brightness(1.03);
+      box-shadow:0 10px 18px rgba(17,131,153,.42);
+    }
+    .tool-box:active{ transform:scale(0.985) }
+    .tool-box:focus-visible{ outline:none; box-shadow:0 0 0 6px var(--ring);}
+
+    .note{
+      margin-top:20px; font-size:11.5px; color:#fff; line-height:1.4; font-weight:500;
+      text-shadow: 0 1px 2px rgba(0,0,0,.4); /* white text for contrast */
+    }
+    .note-small { display:block; font-size:.75em; font-style:italic; opacity:.9; margin-top:2px; font-weight:400; color:#e7fbff }
+
+    @media (max-width:600px){
+      .header{height:100px}
+      .tool-box{font-size:14px; height:54px}
+      .stage{padding:22px 18px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Background -->
+  <div class="bg" aria-hidden="true"></div>
+
+  <!-- Header -->
+  <header class="header" role="banner">
+    <a href="index.html"><img src="logo.png" alt="Vivarch logo" /></a>
+  </header>
+
+  <!-- Stage -->
+  <main class="container" role="main">
+    <section class="stage" aria-live="polite">
+      <div class="placeholder">
+        <h2>Welcome</h2>
+        <p>Select a tool to get started.</p>
+
+        <div class="tools">
+          <a class="tool-box" href="mobile-quoter.html">Mobile Quoter</a>
+          <a class="tool-box" href="zone-allocation.html">Zone Search</a>
+          <a class="tool-box" href="url-shortening-service.html">Short Link</a>
+          <a class="tool-box" href="qr-code-generator.html">QR Code</a>
+          <a class="tool-box" href="links-storage.html">
+            Links Storage <span class="note-small">(beta • desktop only)</span>
+          </a>
+        </div>
+
+        <div class="note">
+          Tip: Click the Vivarch logo at the top of the page at any time to return to the home screen.
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
