@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Prevent zoom on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Vivarch · QR Code Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#149bb2">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="preload" as="image" href="logo.png" />
@@ -31,6 +34,8 @@
         radial-gradient(1200px 800px at 10% -10%, rgba(20,155,178,.18), transparent 60%),
         radial-gradient(1200px 800px at 110% 110%, rgba(20,155,178,.12), transparent 60%),
         linear-gradient(135deg, #e0e5ec 0%, #fafeff 100%);
+      -webkit-text-size-adjust:100%; /* prevent iOS text autosizing/zoom */
+      touch-action:manipulation; /* reduce double-tap/pinch zoom on interactive elements */
     }
 
     /* Header (flat, 150px, logo only) */
@@ -431,6 +436,11 @@
 
       els.clearLogo.addEventListener('click', () => { els.logo.value=''; updateQRCode(); });
     })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    }
   </script>
 </body>
 </html>
