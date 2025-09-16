@@ -2,12 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Prevent zoom on mobile devices -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Vivarch · Tools Hub</title>
 
   <!-- Favicon / Icons -->
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#149bb2">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,6 +35,8 @@
       color:var(--text);
       -webkit-font-smoothing:antialiased;
       background:#0b1a20;
+      -webkit-text-size-adjust:100%; /* prevent iOS text autosizing/zoom */
+      touch-action:manipulation; /* reduce double-tap/pinch zoom on interactive elements */
     }
 
     /* Background image */
@@ -154,5 +159,11 @@
       </div>
     </section>
   </main>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    }
+  </script>
 </body>
 </html>
