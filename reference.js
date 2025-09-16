@@ -334,7 +334,7 @@ window.SCHOOL_DATA = [
   { school: "Xinghua Primary School", consultant: "Yuniza", zone: "South" },
   { school: "Yio Chu Kang Secondary School", consultant: "Yuniza", zone: "South" },
   { school: "Yuying Secondary School", consultant: "Yuniza", zone: "South" },
-  { school: "Kent Ridge Secondary School", consultant: "Yuniza", zone: "West" },
+  { school: "Kent Ridge Secondary School", consultant: "Sarah", zone: "West" },
   { school: "Greendale Secondary School", consultant: "", zone: "East" },
   { school: "Temasek Secondary School", consultant: "", zone: "East" },
   { school: "Jiemin Primary School", consultant: "", zone: "North" },
