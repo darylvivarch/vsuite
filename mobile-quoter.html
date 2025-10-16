@@ -3,31 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Price Proposal Calculator</title>
-
-<!-- Brand font from darylmilanes.com -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
-
+<title>Mobile Quoter</title>
 <style>
   :root{
-    /* Brand palette (darylmilanes.com) */
-    --c-bg:#fafeff;
-    --c-text:#4a4a4a;
-    --c-accent:#006666;
-
-    /* Surfaces / effects */
-    --radius-lg:22px;
-    --radius-md:16px;
-    --glass-bg:rgba(255,255,255,0.6);
-    --glass-brd:rgba(255,255,255,0.45);
+    --c-bg:#fafeff; --c-text:#4a4a4a; --c-accent:#006666;
+    --radius-lg:22px; --radius-md:16px;
+    --glass-bg:rgba(255,255,255,0.6); --glass-brd:rgba(255,255,255,0.45); --glass-brd-dark:rgba(0,0,0,0.06);
     --shadow:0 10px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.5);
-
-    /* States */
-    --warn:#d72c2c1a;
-    --warn-brd:#d72c2c;
-
+    --warn:#d72c2c1a; --warn-brd:#d72c2c;
     --footnote-h:28px; /* reserved vertical space for each footnote */
   }
 
@@ -42,7 +25,7 @@
       radial-gradient(1200px 600px at 10% -10%, #dfffff 0%, #caf6ff 30%, #fafeff 60%, #fafeff 100%),
       linear-gradient(180deg, #fafeff, #e9fdff 60%, #fafeff);
     color:var(--c-text);
-    font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing:antialiased;
     overscroll-behavior:none;
   }
@@ -50,7 +33,7 @@
   /* Generic mobile frame */
   .desk-wrap{ min-height:100svh; display:flex; align-items:center; justify-content:center; padding:24px; }
   .device{
-    width:390px; height:960px; border-radius:48px;
+    width:390px; height:980px; border-radius:48px;
     background:
       linear-gradient(135deg, rgba(255,255,255,0.45), rgba(255,255,255,0.15)),
       radial-gradient(120% 120% at 20% 0%, rgba(0,102,102,0.08), transparent 60%);
@@ -68,22 +51,18 @@
     display:flex; flex-direction:column;
   }
 
-  /* Header (logo removed, typography-forward like darylmilanes.com) */
+  /* Header: flat 80px */
   header{
     height:80px; min-height:80px; flex:0 0 80px;
-    background:rgba(250,254,255,0.85);
+    background:#fafeff;
     display:flex; align-items:center; gap:12px;
-    padding:12px 18px;
+    padding:8px 16px 8px 18px;
     border-bottom:1px solid rgba(0,0,0,0.05);
-    backdrop-filter:blur(10px) saturate(1.1);
-    -webkit-backdrop-filter:blur(10px) saturate(1.1);
   }
+  header img{ height:56px; width:auto; border-radius:12px; }
   header .title-wrap{ display:flex; flex-direction:column; }
-  header h1{
-    font-size:20px; line-height:1.15; margin:0;
-    color:var(--c-accent); font-weight:700; letter-spacing:.2px;
-  }
-  header .subtitle{ margin-top:4px; font-size:12px; color:#5a6b6b; font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+  header h1{ font-size:20px; line-height:1.1; margin:0; color:var(--c-accent); font-weight:700; }
+  header .subtitle{ margin-top:4px; font-size:12px; color:#5a5a5a; }
 
   /* Content area is fixed-height and non-scrollable */
   main{
@@ -103,10 +82,7 @@
     border-radius:var(--radius-lg);
     padding:14px;
   }
-  .group-title{
-    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
-    color:#2b6f6f; margin:2px 0 10px; font-weight:700;
-  }
+  .group-title{ font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#2b6f6f; margin:2px 0 10px; font-weight:700; }
 
   /* 2x2 Mode & Tax grid */
   .mode-grid{ display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:60px; gap:10px; }
@@ -118,7 +94,7 @@
     padding:12px;
   }
   .mode-cell input{ width:22px; height:22px; accent-color:var(--c-accent); }
-  .mode-cell label{ font-weight:700; letter-spacing:.2px; }
+  .mode-cell label{ font-weight:600; }
 
   /* Tables */
   table{
@@ -139,13 +115,12 @@
   .right{ text-align:right; }
 
   .cell-input{
-    box-sizing:border-box; width:100%; border:none; outline:none; background:rgba(255,255,255,0.92);
+    width:100%; border:none; outline:none; background:rgba(255,255,255,0.9);
     border-radius:10px; padding:10px 10px;
     box-shadow:inset 0 1px 0 rgba(0,0,0,0.03), inset 0 -1px 0 rgba(255,255,255,0.7);
-    font-weight:600;
   }
   .cell-input:focus{ box-shadow:0 0 0 3px rgba(0,102,102,0.15), inset 0 1px 0 rgba(0,0,0,0.03); }
-  .readonly{ background:transparent; box-shadow:none; padding-right:0; font-weight:700; }
+  .readonly{ background:transparent; box-shadow:none; padding-right:0; }
 
   .total-row{ background:linear-gradient(180deg, rgba(0,102,102,0.06), rgba(255,255,255,0)); font-weight:800; }
   .accent{ color:var(--c-accent); }
@@ -158,10 +133,21 @@
   }
   .muted.show{ visibility:visible; }
 
-  /* Warnings & disabled rows */
-  .warn{ background:var(--warn) !important; border:1px solid var(--warn-brd) !important; }
+  /* Warnings & disabled rows (show red highlight when one side is missing) */
+  .warn{ background:var(--warn) !important; border:1px solid var(--warn-brd) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,0.35); }
   .disabled-row{ opacity:.55; }
   .disabled-row .cell-input{ background:rgba(0,0,0,0.03); }
+
+  /* Clear button */
+  .clear-wrap{ display:flex; justify-content:center; padding:8px 0 20px; }
+  .clear-btn{
+    background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+    border:1px solid rgba(0,0,0,0.08);
+    padding:10px 18px; border-radius:999px; font-weight:700; color:var(--c-accent);
+    box-shadow:0 6px 18px rgba(0,0,0,0.12);
+  }
+  .clear-btn:active{ transform:translateY(1px); }
+  /* ...existing code... */
 
   /* ===== MOBILE-ONLY ADJUSTMENTS (desktop unchanged) ===== */
   @media (max-width:480px){
@@ -188,13 +174,6 @@
       overflow:visible;
       padding-bottom:calc(var(--footnote-h) + 32px + env(safe-area-inset-bottom));
     }
-
-    /* Prevent iOS zoom on input focus */
-@media (max-width:480px){
-  input, textarea, select,
-  .cell-input { font-size:16px; }
-}
-
   }
 </style>
 </head>
@@ -203,9 +182,11 @@
     <div class="device">
       <div class="screen">
         <header>
-          <!-- Logo removed per request -->
+          <a href="index.html">
+            <img src="logo.png" alt="Logo">
+          </a>
           <div class="title-wrap">
-            <h1>Price Proposal Calculator</h1>
+            <h1>Mobile Quoter</h1>
             <div class="subtitle">Package • Participant • Hour</div>
           </div>
         </header>
@@ -302,14 +283,12 @@
             </table>
             <div class="muted" id="hourNote">Total reflects an additional 9% Singapore GST.</div>
           </section>
-        </main>
 
-        <!-- Clear button -->
-        <section class="card">
-          <div style="display:flex; justify-content:flex-end;">
-            <button id="clearBtn" style="padding:10px 14px; border-radius:10px; border:1px solid var(--glass-brd); background:transparent; font-weight:700; color:var(--c-accent);">Clear</button>
+          <div class="clear-wrap">
+            <button class="clear-btn" id="clearBtn" type="button" aria-label="Clear entries">Clear</button>
           </div>
-        </section>
+
+        </main>
       </div>
     </div>
   </div>
@@ -379,6 +358,37 @@
   }
   buildRows(paxBody,'pax'); buildRows(hourBody,'hour');
 
+  // Clear button behavior
+  const clearBtn = document.getElementById('clearBtn');
+  function clearAllEntries(){
+    // Package
+    pkgPrice.value = '';
+    pkgTotal.value = '';
+
+    // Participant rows
+    paxBody.querySelectorAll('tr').forEach(tr=>{
+      tr.classList.remove('disabled-row');
+      tr.querySelectorAll('input').forEach(inp=>{
+        inp.value = '';
+        inp.classList.remove('warn');
+      });
+    });
+    paxTotal.value = '';
+
+    // Hour rows
+    hourBody.querySelectorAll('tr').forEach(tr=>{
+      tr.classList.remove('disabled-row');
+      tr.querySelectorAll('input').forEach(inp=>{
+        inp.value = '';
+        inp.classList.remove('warn');
+      });
+    });
+    hourTotal.value = '';
+
+    recalcAll();
+  }
+  if(clearBtn) clearBtn.addEventListener('click', clearAllEntries);
+
   function focusNextEditable(current){
     const card=current.closest('section.card');
     const inputs=[...card.querySelectorAll('input.cell-input:not(.readonly)')];
@@ -447,42 +457,6 @@
     if(modeParticipant.checked) recalcMatrix(paxBody, paxTotal);
     if(modeHour.checked) recalcMatrix(hourBody, hourTotal);
   }
-
-  // Clear all editable inputs and totals
-  function clearEntries(){
-    // package
-    pkgPrice.value = '';
-    pkgTotal.value = '';
-
-    // participant & hour rows
-    [paxBody, hourBody].forEach(tbody=>{
-      tbody.querySelectorAll('tr').forEach(tr=>{
-        tr.classList.remove('disabled-row');
-        // clear inputs (both qty and rate)
-        tr.querySelectorAll('input').forEach(inp=>{
-          inp.value = '';
-          inp.classList.remove('warn');
-        });
-      });
-    });
-
-    // clear subtotals and totals
-    paxBody.querySelectorAll('input[data-role$="-subtotal"]').forEach(e=>e.value='');
-    hourBody.querySelectorAll('input[data-role$="-subtotal"]').forEach(e=>e.value='');
-    paxTotal.value=''; hourTotal.value='';
-
-    // Recalculate to update any state / footnotes
-    recalcAll();
-    // focus first editable in visible card
-    const first = document.querySelector('section.card:not([style*="display:none"]) input.cell-input:not(.readonly)');
-    if(first) first.focus();
-  }
-
-  // wire the Clear button
-  document.addEventListener('DOMContentLoaded', ()=>{
-    const btn = document.getElementById('clearBtn');
-    if(btn) btn.addEventListener('click', clearEntries);
-  });
 
   // Initial state: fixed-layout friendly
   modePackage.checked=true; withGst.checked=true;
